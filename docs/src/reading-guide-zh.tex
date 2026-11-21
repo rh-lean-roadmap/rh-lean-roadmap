@@ -1,0 +1,358 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[htt]{hyphenat}
+\usepackage{booktabs,tabularx,longtable,array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{xeCJK}
+\setCJKmainfont[Path=fonts/]{NotoSerifSC.ttf}
+\setCJKsansfont[Path=fonts/]{NotoSansSC.ttf}
+\setCJKmonofont[Path=fonts/]{NotoSansSC.ttf}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black]{hyperref}
+\xeCJKsetup{CJKecglue={\hskip 0.15em plus 0.05em}}
+\linespread{1.25}
+
+\newcommand{\Lean}[1]{\texttt{\small #1}}
+\newcommand{\arch}[1]{\par\medskip{\small\raggedright\noindent\textsf{档案}\quad #1\par}\medskip}
+\newcommand{\Q}{\mathbf{Q}}
+\newcommand{\Z}{\mathbf{Z}}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\Sha}{\mathrm{Sha}}
+\renewcommand{\Re}{\operatorname{Re}}
+\renewcommand{\Im}{\operatorname{Im}}
+\setlist{itemsep=2pt,topsep=4pt}
+\sloppy\emergencystretch=4em
+
+\title{\textsf{黎曼猜想 Lean 证明解读}\\[4pt]\large Alpöge 档案的逐步读法}
+\date{2026 年 11 月}
+\author{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+2026 年 11 月 20 日，Levent Alpöge 公布了与 Claude 合作完成的黎曼猜想和狄利克雷 $L$ 函数广义黎曼猜想的 Lean 证明。证明是一份没有注释的 Lean 档案，约 1740 万行，几个独立的检查器已经接受了它。本文按证明的逻辑顺序，把档案里的论证翻译成数学语言：最终命题怎样归结为临界线右侧无零点；无零点怎样归结为一列区间上的单侧素数和估计；这个估计怎样由一条长约 $\sqrt x$ 的 theta 提升链给出，其中周期的整除性起到 Stepanov 方法里“重数”的作用；混进来的辅助特征怎样靠选取辅助素数来控制；额外的整除性怎样由 Tate–Shafarevich 型群的上界压住；最后，三个顶层输入各自在档案的哪里、用哪些理论证明。每一节都附上档案里的声明名和位置，读者可以逐条核对。
+\end{abstract}
+
+\section*{读前说明}
+\begin{itemize}
+\item \textbf{什么是已验证的。} 档案的正确性由 Lean 内核和 Sutherland 汇总的几个独立检查器保证\,\cite{sutherland}。本文说“档案证明了”某个命题，指它是档案里一个通过检查的 Lean 定理，数学翻译由我们给出。
+\item \textbf{怎么读出来的。} 我们在本地编译了“三个输入推出黎曼猜想”这一段（17{,}279 个文件），从最终定理出发沿证明项统计实际用到的声明，又为整个档案建了源码索引。逐点追踪由几个 AI 模型分头完成，每条结论都要求给出声明名和行号，并由另一家模型对照源码复核。档案位置一栏优先列出编译证明实际用到的版本：档案里同一个结论常有好几个版本，只有其中一个在最终证明的路径上。
+\item \textbf{位置的写法。} “\Lean{SigALe.lean:38}”指文件名和行号，完整路径见附录。档案按 SHA-256 为 \Lean{9631b4f0\ldots c7fc} 的版本，即 Sutherland 检查的版本。
+\item \textbf{作者。} 一位独立作者定方向、做取舍；文字由多个 AI 模型（其中包括 Anthropic 的 Claude）阅读档案后写成并交叉核对。Alpöge 在 Anthropic 工作，本文独立于他和 Anthropic。
+\end{itemize}
+
+\section*{证明的形状}\label{sec:shape}
+
+整个证明可以用六句话概括，对应下面的六步。
+\begin{enumerate}
+\item 只需证明：每个狄利克雷 $L$ 函数在 $\Re s>1/2$ 没有零点。函数方程把临界带左半边反射过来，黎曼猜想是模 $1$ 的平凡特征的情形。
+\item 由 Landau 型的正性论证，只需证明一个单侧估计：一个加权、中心化的素数和 $G_m(y)$ 在一列越来越远的区间 $[Y,Y^{3/2}]$ 上处处不超过 $y^{1/2+O(\varepsilon)}$。
+\item 这个素数和可以拆到一个有限阿贝尔 Galois 群的各个 Frobenius 类上逐类去数；对子群平均以后，留下的正是目标特征，外加几组带二次扭曲的“陪跑”特征，后者靠为每个区间选一对辅助素数来压住。
+\item 整数上没有求导，“重数”由一条长约 $\sqrt x$ 的 theta 提升链造出来：每次提升都对 theta 核取由权指定的高阶导数，阶乘带来的素因子扣掉分母能抵消的部分，周期在各素数处多出可以计算的整除性，而且对整张格成立。
+\item 把格除以这些素因子，格的斜率上升，上升量正好是素数的对数加权和；周期映射在复数处的大小和一个族斜率不等式又从上面压住这个斜率。两头一夹就是 Stepanov 式的“重数乘点数不超过次数”，主项精确抵消，链长取 $\sqrt x$ 时误差落到平方根量级。
+\item 与链无关的额外整除性，由一族分圆子域上 Tate–Shafarevich 型群的总长度上界压住。
+\end{enumerate}
+
+在 Lean 里，第 3 到第 6 步的论证从三个输入出发：有限群 $GL_d(\mathbf F_p)$ 尖点特征标的分类（\textsf{Green}），Tate–Shafarevich 型群的窗口上界（\textsf{VWin}），以及一整套互相相容的 theta 链数据（\textsf{HypsAlt}）。“三个输入推出黎曼猜想”这一段我们在本地编译并机器验证过；三个输入本身在档案其余部分证明，第~\ref{sec:inputs} 节给出它们的地图。
+
+\section{五个主定理与第一步}\label{sec:s1}
+
+\paragraph{五个主定理。} \Lean{Main.lean} 证明五个定理：Mathlib 定义的黎曼猜想；黎曼猜想的另一种写法（$\zeta(s)=0$、$s\ne1$、$s$ 不是负偶数时 $\Re s=1/2$）；对任意模 $N\ge1$ 的狄利克雷特征 $\chi$，$\Re s>1/2$ 时 $L(s,\chi)\ne0$（主特征的 $L$ 函数在 $s=1$ 处有极点，Mathlib 在那一点给函数取了一个值，所以把它除外）；$0<\Re s<1$ 的零点都在 $\Re s=1/2$ 上；以及同一结论对本原特征的版本。五个定理的证明都汇到同一个定理 \Lean{allChi}：所有狄利克雷 $L$ 函数在 $\Re s>1/2$ 无零点。一般数域的 Dedekind $\zeta$ 函数不在范围内。
+
+\paragraph{第一步：只看临界线右边。} 对本原特征 $\chi$，函数方程把 $L(s,\chi)$ 和 $L(1-s,\overline\chi)$ 联系起来，根数非零，阿基米德 Gamma 因子在 $\Re s>0$ 全纯且不为零，所以 $0<\Re s<1/2$ 里的零点会反射成 $1/2<\Re s<1$ 里的零点。非本原特征的 $L$ 函数等于对应本原特征的 $L$ 函数乘上有限个欧拉因子 $1-\chi^*(p)p^{-s}$，它们在 $\Re s>0$ 不为零。黎曼猜想是模 $1$ 的平凡特征的情形，那时 $L$ 函数就是 $\zeta$。$\Re s\ge1$ 上的非零性直接取自 Mathlib。
+
+\arch{\Lean{allChi}、\Lean{rhOfAll}、\Lean{critAll}、\Lean{claimAll}（\Lean{Supplements/Kernels/MainTheorems.lean:7--16}）；\Lean{Formalism.VW.rh\_of\_every}、\Lean{Formalism.VW.critLine}（\Lean{CritLine.lean:11--32}）；\Lean{Claim.strip}（\Lean{ClaimStrip.lean:59--73}）；\Lean{UpperTheory.Top.imprimitive}。}
+
+\section{第二步：Landau 窗口判据}\label{sec:s2}
+
+\paragraph{要估计的量。} 固定一个本原特征 $\psi$，设它的阶为 $o$，令 $\mathcal X$ 为 $\psi$ 的各次幂所诱导的 $o$ 个本原特征。记 $\Lambda$ 为冯·曼戈尔特函数，$\gamma$ 为欧拉常数，对 $y\ge1$ 令
+\[
+G_z(y)=\sum_{n\le y}\Lambda(n)\Bigl(\frac yn-1\Bigr)-y\log y+(1+\gamma)y,\qquad
+g_\chi(y)=\sum_{n\le y}\Lambda(n)\chi(n)\Bigl(\frac yn-1\Bigr)+y\,\frac{L'}{L}(1,\chi)\quad(\chi\ne1),
+\]
+\[
+G_m(y)=G_z(y)+\frac1{3o+1}\sum_{\chi\in\mathcal X,\ \chi\ne1}\Re g_\chi(y).
+\]
+减去的那部分正好是素数和的“主项”，$G_m$ 是中心化以后的误差。系数取 $1/(3o+1)$，是因为 $\bigl|\sum_{\chi\ne1}\Re\chi(n)\bigr|\le o-1<3o+1$，这样 $G_m$ 里素数和部分的系数非负，正是经典 Landau 定理要求的正性。档案证明的窗口版本用到的正性更少：只用到各特征的权重为正，以及下面第 3 条里的恒等式。
+
+\paragraph{窗口判据。} 档案证明了下面的命题。设 $0<\theta<1$、$\delta>0$、$C$ 为常数。如果对任意 $Y_0$，都有 $Y\ge Y_0$，使 $G_m(y)\le Cy^\theta$ 在\emph{整个}区间 $[Y,Y^{1+\delta}]$ 上成立，那么 $\mathcal X$ 中每个 $L(s,\chi)$ 在 $\Re s>\theta$ 都没有零点。这里只要一侧的上界，只要在一列区间上成立，区间之间的空隙可以任意大。最终证明取 $1+\delta=3/2$、$C=1$。
+
+\paragraph{证明的四步。}
+\begin{enumerate}
+\item \emph{零点变成极点。} 令 $g(u)=G_m(e^u)$，它的拉普拉斯变换就是 $G_m$ 的 Mellin 变换。对非平凡特征，在 $\Re s>1$ 有
+\[
+\int_1^\infty g_\chi(y)\,y^{-s-1}\,dy=-\frac{(L'/L)(s,\chi)-s\,(L'/L)(1,\chi)}{s(s-1)} .
+\]
+$L(s,\chi)$ 在 $\rho$ 处的 $m$ 重零点给出 $L'/L$ 的单极点，留数为 $m$，所以变换在 $\rho$ 处有单极点，留数 $m/(\rho(1-\rho))$。
+\item \emph{留数不会互相抵消。} 取实部使 $\chi$ 和 $\overline\chi$ 各占一半。全族变换在 $\rho$ 处的留数是 $S_\rho/(\rho(1-\rho))$，其中 $S_\rho$ 是各零点重数按正权重的加权和，严格为正，所以留数不为零，不同特征的零点不会相互抵消。若 $\rho=\beta$ 是实数，由 $\Re s\ge1$ 上无零点得 $0<\beta<1$，这时留数为正。
+\item \emph{窗口上界变成高阶导数的上界。} 记变换为 $\Phi$，令 $A_k(z)=(-1)^k\Phi^{(k)}(z)/k!$，它的积分核是 $u^ke^{-\sigma u}e^{-itu}/k!$。取 $U=\log Y$、$\sigma>2$、$k\approx(1+\delta/2)\sigma U$，核的峰值落在对数窗口 $[U,(1+\delta)U]$ 的中间。窗外只用粗略的增长界。窗内的关键是恒等式 $|g|+g=2\max(g,0)$：它让单侧上界足以控制 $|A_k(\sigma+it)|+\Re A_k(\sigma)$，即使 $g$ 有很大的负值也不要紧。结果是
+\[
+|A_k(\sigma+it)|+\Re A_k(\sigma)\le C_1\,\frac{e^{\eta U}}{(\sigma-\theta)^k}\qquad(\text{对所有实数 } t).
+\]
+\item \emph{极点给出相反方向的下界。} 假设有极点满足 $\Re\rho>\theta$。档案利用极点的局部有限性分两种情形，不需要假设存在实部最大的零点。一种情形，可以选 $z=\sigma+it$，使以 $z$ 为心的小圆盘里恰有一个极点 $\rho$，而实点 $\sigma$ 附近另有足够大的无极点圆盘；减去极点部分后用柯西估计，$A_k(z)$ 的主项是 $c_\rho/(z-\rho)^{k+1}$，量级为 $|z-\rho|^{-k-1}$，而 $A_k(\sigma)$ 小得多。另一种情形，离 $\sigma$ 最近的是一个实极点 $\beta>\theta$，这时取 $t=0$，$A_k(\sigma)$ 的主项 $c_\beta/(\sigma-\beta)^{k+1}$ 为正，不会被模长抵消。两种情形下这个量级都超过第 3 条的上界，取 $U$ 充分大即得矛盾。
+\end{enumerate}
+
+\paragraph{与经典结果的关系。} Landau 1905 年的定理和 Widder 书里的版本要求正性从某处起\emph{处处}成立\,\cite{landau,widder}；只在一列区间上成立时，经典定理不能直接用。逐点上界版本与 Kaczorowski 和 Pintz 1986 年关于“每个充分大的 $[X^{1-\varepsilon},X]$ 内都有振荡”的定理关系密切\,\cite{kp}。档案实际证明的是更一般的版本：每个窗口里只要求 $G_m$ 的正部被某个函数控制，并且只控制它的加权积分。这一步没有用任何外部文献命题，所需的 $\Re s\ge1$ 上的非零性直接来自 Mathlib。
+
+\paragraph{为什么是 $3/2$。} 窗口判据对任意固定的 $\lambda=1+\delta>1$ 都成立。上游的算术估计给出的是 $[W,W^2]$ 上的控制，为了吸收一个常数要把左端放大成 $Z=kW$；$(kW)^{3/2}\le W^2$ 等价于 $k^3\le W$，所以取 $3/2$。任何固定的 $1<\lambda<2$ 都可以用同样的办法。
+
+\arch{判据 \Lean{Deduction.zeroFree\_of\_rpow\_window}（\Lean{ZeroFreeOfRpowWindow.lean:11}）；层级形式 \Lean{UpperTheory.Comparison₂.formB}（\Lean{PrimitiveCosets/Imports.lean:8--19}）；$G_z$、$G_m$ 在 \Lean{StatementOC.lean:11--13}、\Lean{ExplicitFormulaErrorOfHostConditions.lean:36--40}；极点与留数 \Lean{Deduction.poleData}（\Lean{poleData.lean:248}，留数计算在 336--383 行）；导数估计 \Lean{Deduction.landau\_window\_key}（\Lean{landauWindow.lean:40}）；矛盾 \Lean{Deduction.landau\_window}（\Lean{landauWindow.lean:83}）；$3/2$ 的来源 \Lean{UpperTheory.Top.winPairs}（\Lean{WinPairs.lean:16--59}）。处处成立的版本另有 \Lean{Formalism.HC.Landau.zero\_free\_of\_Chebyshev\_growth}（\Lean{Landau.lean:538}），最终证明不用它。}
+
+\section{第三步：素数和与特征（算术一侧）}\label{sec:s3}
+
+\paragraph{有限域上的原型。} Alpöge 说这个论证是 Stepanov 方法的后代\,\cite{alpoge}。在有限域 $\mathbf F_q$ 上，Stepanov 和 Bombieri 估计曲线的点数 $N$ 时，构造一个不为零的有理函数：它在除 $m_0$ 个以外的所有有理点上至少有 $m$ 重零点，极点除子的次数是 $D$，于是 $m(N-m_0)\le D$\,\cite{stepanov,bombieri}。零点的重数由 Frobenius 映射强加，不需要知道点在哪里。取 $m$ 约为 $\sqrt q$、$D/m=q+O(\sqrt q)$，就得到 $N\le q+O(\sqrt q)$。整数上没有求导，Alpöge 说难点在于找到起同样作用的“重数”。第三到第五步讲档案怎样做到这一点：本节是要数的东西（素数），第四步是重数（周期的整除性），第五步是“重数乘点数不超过次数”的那个不等式。
+
+\paragraph{有限群和 Frobenius 类。} 档案在一个有限阿贝尔群 $G=E_0\times A$ 上做傅里叶分析，$G$ 同构于一个阿贝尔域 $E$ 的 Galois 群 $\mathrm{Gal}(E/\Q)$，也是某个分圆模数单位群的商。$E_0=\Z/2\times\Z/2$ 的两个坐标分别记录两个辅助素数 $d$、$q$ 的二次剩余符号。每个不分歧的素数 $p$ 在 $G$ 里有一个 Frobenius 类 $F_p$，它的各次幂 $p^i$ 落在 $iF_p$。档案指定一个子集 $\Phi\subset G$（第一个二元坐标为零的元素），只数 Frobenius 类落在 $\Phi$ 外面的素数幂；对这类素数，$iF_p\notin\Phi$ 恰好是 $i$ 为奇数。
+
+\paragraph{要数的量。} 在窗口里的每个大点 $x$ 处，档案搭一条 $m$ 层的链（第四步），链上有一组共用的顶端位置 $t\in TT$（记 $n_T=|TT|$），每个位置带一个整数权 $a_t$，满足 $|a_t/b-x|\le1$；第 $j$ 层在位置 $g$ 上还有一个局部权 $w_j(g)$。对一个位置 $t$ 和一层 $j$，要数的量是
+\[
+\mathrm{ASK}_{tj}=\sum_{p\ \text{惰性型}}2\log p\sum_{i\ \text{奇}}\Bigl[\frac{a_t}{p^i}-w_j\bigl(r_t(iF_p)\bigr)\Bigr]_+\ +\ \log d\sum_{i\ge1}\sum_{g\in iF_d+I_d,\ g\notin\Phi}\Bigl[\frac{a_t}{d^i}-w_j\bigl(r_t(g)\bigr)\Bigr]_+ ,
+\]
+其中 $[z]_+=\max(z,0)$，$r_t$ 是把 $g$ 平移到位置 $t$ 的映射，$I_d$ 是分歧素数 $d$ 的惯性子群。权 $[a/p^i-w]_+=w\cdot[y/p^i-1]_+$（$y=a/w$）和第二步里 $G_m$ 用的权 $\Lambda(n)(y/n-1)$ 同一个形状。$\mathrm{ASK}$ 是对 $t,j$ 的总和。
+
+\paragraph{参数和量级。} 下面这些量在第三到第五步反复出现，先列在一起。
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+记号 & 含义与量级\\
+\midrule
+$x$，$\varepsilon$ & 窗口里的一个大点；一个小正数，$0<\varepsilon<1/52$\\
+$m$ & 链长，即提升的层数；取不小于 $x^{1/2-\varepsilon/16}$ 的最小偶数\\
+$b$ & 公共权，指数尺度：$L=x^\varepsilon$，$b=e^{L}$\\
+$a_t$ & 顶端位置 $t$ 的整数权，$|a_t/b-x|\le1$，即 $a_t\approx bx$\\
+$n$，$n_T$ & 位置总数；顶端位置数，$n_T\ge x^{-\varepsilon/8}n/2$\\
+$Q$ & 总权 $n_T\,m\,b$\\
+$k$ & 链的起始秩；第五步的第二项要求 $xm/k\le2$，所以 $k$ 至少约 $x^{3/2}$\\
+$o$ & 目标族 $\mathcal X$ 的大小，即 $\psi$ 的阶\\
+$q$，$d$ & 每个窗口选一次的辅助素数，给出二次扭曲（第三、六步）\\
+$g_0$，$g_1$ & 第四步里两个固定的辅助素数，与 $q$、$d$ 无关\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{每层一个精确恒等式。} 由有限群特征的正交关系，
+\[
+\mathrm{ASK}_{tj}-\mathrm{MAIN}_{tj}=\mathrm{De}_{tj},
+\]
+右边是对 $G$ 的全部特征 $\psi$ 求和，每一项是 $\psi$ 对应的素数和（第二步的 $g_\psi$ 那种形状）在点 $y=a_t/w_j(r_t(g))$ 处的值，带权 $w_j(r_t(g))\overline{\psi(g)}/|\Phi|$。平凡特征给出主项 $\mathrm{MAIN}_{tj}$，其中含 $a\log a-a\log w-(1+\gamma)a$，以及由正交性留下来的非平凡特征常数项。所以“逐类数素数”和“对特征求和”给出同一个数，分歧素数应占的权重也算得准。
+
+\paragraph{换成公共权，再对子群平均。}
+\begin{enumerate}
+\item \emph{换权。} 在“厚”位置，各层的局部权都接近同一个数 $b$，把它们换成 $b$；“薄”位置本来贡献就小，直接去掉。每个顶点、每层的损失至多 $2b/x$，合计 $2Q/x$，其中 $Q=n_T\,m\,b$。
+\item \emph{平均。} 对一个循环子群 $A_0$ 的所有平移求平均。由正交性，只有在 $A_0$ 上平凡的特征留下来，厚位置所占的比例记为 $\delta$。
+\item \emph{比较取值点。} 把各特征的 $g_\chi$ 在 $a(t)/b$ 处的值换成在 $x$ 处的值。$g_\chi(y)$ 关于 $y$ 的变化率是 $\log y$ 的量级，而 $|a(t)/b-x|\le1$，所以每个特征的误差都很小，全部加起来也不超过 $x^{1/2+\varepsilon}$，档案写成 $4x^{1/2+\varepsilon}$。这一步没有用到任何平方根界。
+\end{enumerate}
+留下的特征恰好是：目标族 $\mathcal X$ 里的 $o$ 个特征，以及把它们乘上辅助素数 $q$、$d$ 的二次符号得到的三组“陪跑”特征，一共 $4o$ 个。档案取的顶点份额使目标部分\emph{恰好}等于第二步的 $G_m$。记 $G=G_m-\Sigma_A$，$\Sigma_A$ 是陪跑部分的绝对值之和，就得到平衡式
+\[
+Q\cdot\frac\delta2\cdot\bigl(G-4x^{1/2+\varepsilon}\bigr)\ \le\ E+\frac{2Q}{x},
+\]
+其中 $E$ 需要同时盖住每个平移上的 $\mathrm{ASK}-\mathrm{Main}$。$E$ 由第五步给出。
+
+\paragraph{陪跑特征怎样控制。}
+\begin{itemize}
+\item \emph{长什么样。} 每个陪跑特征都可以写成 $\xi(n)\bigl(\tfrac nq\bigr)^i\bigl(\tfrac nd\bigr)^j$，其中 $\xi$ 是目标特征的某个幂，$(i,j)\ne(0,0)$，即都带一个由辅助素数给出的非平凡二次扭曲。
+\item \emph{怎样选辅助素数。} 对每个模 $M$、每个 $0<\varepsilon<1/52$ 和每个 $A\ge1$，档案证明：对所有充分大的 $Y$，存在一对素数 $q,d$，使所有带非平凡扭曲的特征在\emph{整个}区间 $Y\le y\le Y^A$ 上同时满足 $|g_\chi(y)|\le y^{1/2+\varepsilon/2}$ 和 $|(L'/L)(1,\chi)|\le4\log y$；对实特征的扭曲，还要求在一个指定的矩形里没有零点。存在性靠排除坏的候选。一是对候选素数 $q$ 的均方估计：一个截断在很远处的扭曲素数和 $S_q(y)$，其平方对候选 $q$ 的平均不超过 $C\,y\log y$，由此数出在区间某处越界的 $q$ 很少。二是零点密度估计：导子不超过 $R$、在 $\Re s>1-1/400$、$|\Im s|\le R$ 内有零点的本原特征至多 $C\,R^{1/4}$ 个，用来排除在 $s=1$ 附近有零点的特征。对剩下的特征，$S_q$ 的界连同无零点的矩形一起，转成 $g_\chi(y)$ 和 $(L'/L)(1,\chi)$ 的界。先选 $q$，再对选定的 $q$ 选 $d$，因为 $d$ 的条件里有 $q\mid d+1$。
+\item \emph{没有循环。} 先固定的是目标族 $\mathcal X$，随窗口改动的是 $q,d$。选辅助素数的定理和零点密度估计都在档案里证明，它们的 import 闭包不含用到它们的后续文件。
+\end{itemize}
+于是 $\Sigma_A\le4o\,x^{1/2+\varepsilon}$：每一项用同一个界，项数不超过 $4o$。
+
+\arch{有限群与宿主数据 \Lean{Formalism.HC.HostRaw}（\Lean{ConjEMemHostFIff.lean:12}）、\Lean{UpperTheory.Comparison₂.toE\_bij}（\Lean{ToEBij.lean:37}），$E_0$ 在 \Lean{PartnersToFactorsAt.lean:13--26}；$\mathrm{ASK}$ 的定义 \Lean{characterSumData.askP}、\Lean{askD}、\Lean{ASK}（\Lean{FirstPrimeNeSecondPrime.lean:72--87}）；每层恒等式 \Lean{Deduction.ch\_balance}（\Lean{ChBalance.lean:200--260}）、\Lean{Deduction.CharacterBalance.askExp}（\Lean{ChBalance.lean:122}）；换权、平均与 $2Q/x$ \Lean{Deduction.CharacterBalanceMoves.core}、\Lean{th\_le}、\Lean{sum\_A}（\Lean{ChCore.lean:28--337}）；取值点比较 \Lean{Deduction.ch\_core}（\Lean{ChCore.lean:343--442}）；$G_m$ 的识别 \Lean{UpperTheory.Comparison₂.gmA\_eq}（\Lean{GmAEq.lean:61}）。陪跑特征：\Lean{UpperTheory.Comparison₂.sigA\_le}（\Lean{SigALe.lean:38}）、\Lean{card\_PsiA}（\Lean{CardPsiA.lean:60}）、\Lean{UpperTheory.Top.boundedTw}（\Lean{BoundedTw.lean:5--57}）、\Lean{UpperTheory.Top.PairGood}（\Lean{PairGood.lean:18--31}）、\Lean{QH.pairEx}（\Lean{pairEx.lean:112}）、\Lean{QH.meanSqK}、\Lean{QH.bad\_share}；零点密度 \Lean{ZeroDensityBox}（\Lean{CountSt.lean:7}），由 \Lean{ZD.zero\_density\_box}（\Lean{CountZAll.lean:13}）证明。}
+
+\section{第四步：theta 链造出“重数”}\label{sec:s4}
+
+\paragraph{场景。} theta 提升把一个群上的自守形式搬到另一个群上，办法是对一个同时在两个群下自守的 theta 核积分。档案用的是正定酉群，theta 核依赖辅助的分裂特征。在档案选定的水平、权和代数模型下，相关的自守形式由有限多个双陪集（格的类）上的取值描述；对指定的格和特征子空间里的向量，出现的周期在一个数域 $K$ 里有代表元，可以问它们被某个素数整除了多少次。链是一串提升 $U(X_0)\to U(X_1)\to\cdots\to U(X_m)$。
+
+\paragraph{一次提升为什么多带出 $p$ 的因子。} 这是整个“重数”的来源。一次提升要从局部 theta 核的展开式里取出由权指定的高阶导数：档案用最高权向量对应的多项式 $P$（对权图每一列取一个列子式再相乘）当作微分算子，作用在核的幂级数上再在原点取值，即 $(P(\partial)f)(0)$。
+\begin{itemize}
+\item 对一个变量取 $n$ 次导数，系数里出现 $n!$，其中含多少个 $p$ 可以精确计算。
+\item 局部 theta 核写成 $\exp(-\Phi)\cdot U$，其中 $\Phi$ 是一个高度为 $2$ 的 Lubin–Tate 型形式群上的双加性型，对数是 $\sum_j X^{p^{2j}}/p^j$。展开带来两类分母：指数展开里的 $1/k!$ 和对数里的 $1/p^j$。
+\item 分母能抵消的 $p$ 的个数，每一项都不超过权图在相应位置的列数。阶乘带来的 $p$ 减去这些可能的抵消，剩下的下界记为 $g_0$。所以无论核的具体系数是什么，都能提前算出至少有多少个 $p$ 会留下来。
+\item 在选中的惰性 Frobenius 轨道上还有更强的估计：先在输入格上作一个对相邻格求和的 Hecke 算子，它和提升算子交换时多出一个可以算清的 $p$ 次幂 $p^{\mathrm{Pr}}$，于是可记的增益提高到 $g_U-\mathrm{Pr}$。这个增强对链长做归纳得到。
+\end{itemize}
+下一次提升是线性的，上一步已经提出来的因子原样带过去，再乘上这一步保住的因子。
+
+\paragraph{每一层的得与失。} 固定链上的一列 $u$ 和 $K$ 的一个有限素位 $w$（在素数 $p$ 上方），第 $j$ 层贡献三个量：增益 $\mathrm{gainD}_j(w)$（即上面的 $\max(g_U-\mathrm{Pr},g_0,0)$ 或 $\max(g_0,0)$；在被筛掉的素数上记为零），基础项 $F_j(w)$（由权和局部类型决定，可以为负），以及损失 $E_{u,j}(w)$（相关稳定子群阶的 $p$ 进赋值，再按素数类型加一项）。整条链在 $(u,w)$ 处的预算是
+\[
+\mathrm{sg}(u,w)=\sum_{j=1}^{m}\bigl(\mathrm{gainD}_j(w)+F_j(w)-E_{u,j}(w)\bigr).
+\]
+两个固定的辅助素数 $g_0,g_1$、被筛掉的素数和这一列自己的水平素数 $T_u$ 单独处理。
+
+\paragraph{整除性。} 档案证明：对输入格 $\mathrm{NuLat}_u$ 里的\emph{每个}向量和每个指定的测试向量，链末的周期在 $K$ 里有代表元 $y$，满足 $y=0$ 或 $v_w(y)\ge\lfloor e_w\,\mathrm{sg}(u,w)\rfloor$，其中 $e_w$ 是分歧指数。下界对整张格成立，这是下一步能做“除法”的前提。
+
+\paragraph{除法。} 记 $s_w=\lfloor e_w\,\mathrm{sg}(u,w)\rfloor$。既然格上所有周期在 $w$ 处都至少被整除 $s_w$ 次，就可以让输入在 $w$ 处多带 $s_w$ 阶分母：把输入格换成
+\[
+N'_u=I_u\cdot\mathrm{NuLat}_u,\qquad I_u=\prod_{w}\mathfrak p_w^{-s_w},
+\]
+配对的值仍是代数整数：新格经周期映射 $B_u$ 映到一个全局格 $RR$ 的对偶 $\mathrm{Hom}(RR,\mathcal O_K)$ 里。换格以后，格的平均斜率\emph{恰好}增加
+\[
+\mu(N'_u)-\mu(\mathrm{NuLat}_u)=2\sum_{w}\frac{\log N\mathfrak p_w}{[K:\Q]}\,s_w .
+\]
+档案里的斜率 $\mu$ 是通常 Arakelov 斜率的两倍再加一个常数，高度也用平方范数，所以公式里有因子 $2$。若某处 $s_w<0$，这一项是负的。
+
+\paragraph{跨 Hecke 特征拼出整结构。} 全局格 $RR$ 不是在一个特征下取的。档案在每个素位 $w$ 处选一个有限阶 Hecke 特征 $\mu_w$（只有有限个与参考特征不同），在每处取相应的局部格，再在各素位上取交，$RR=\bigcap_w\bigl(\iota_{\mu_w}(\Lambda_{\mu_w})\bigr)_{\mathfrak p_w}$，并证明 $RR$ 仍是格，在每个 $w$ 处局部化后恰好是那里选定的格。这与 Alpöge 时间线的两条相对应：第 12 条说，由 seesaw 原理，迭代提升的周期是一个不依赖 Hecke 特征的 Bessel 周期；第 15 条说“跨 Hecke 特征拼接整结构，求一个 gcd，即额外的平均”。
+
+\paragraph{大小。} 除了整除性，还要控制每次提升的大小：Rallis 内积公式控制提升在相关等型分量上的范数，Chowla–Selberg 公式规范 CM 周期，Siegel 质量公式给出相邻两秩之间的体积比\,\cite{hks,cs}。
+
+\arch{局部机制：微分作用 \Lean{Formalism.MainNotions.FormalGroupSystem.applyD}（\Lean{FormalGroupSystem.lean:256--259}），列子式之积 \Lean{PIv}（同文件 405--422），theta 核条件 \Lean{ExtensionLocalCondition}（162--170），$g_0$ 的局部公式 \Lean{gA}（66--70）与证明 \Lean{VolumeRatio₂}（658--659），Hecke 交换 \Lean{Conclusion4}（671--679），对链长的归纳 \Lean{main\_ind}（\Lean{YEPEComm.lean:131--186}）；系数估计的源头 \Lean{Formalism.InvariantFactorPaths.G7.Top.entry\_a\_one}（\Lean{KOneConsequence.lean:43}）。全局公式 \Lean{Formalism.MainNotions.G.g0}、\Lean{gU}、\Lean{Pr}、\Lean{gainP}（\Lean{IsResidueClassZero.lean:247--401}）。局部结果经 \Lean{Formalism.MainNotions.Pk.sum\_over\_primes\_service}（\Lean{SumOverPrimesHypotheses.lean:187--222}）汇总，再由 \Lean{Formalism.L2.G.Adm2InU.admissible\_level\_two}（\Lean{AdmissibleAtGeneratorPlaces.lean:214--246}）给出整除性接口 \Lean{LocalQuadraticParts.adm2}。预算 \Lean{Formalism.BasicNotions.SizeData₂.sg}（\Lean{DataParams₂.lean:215}）；除法 \Lean{DV.Iu}、\Lean{DV.NprimeDef}（\Lean{DataDIVDefs.lean:17--24}）；配对整性 \Lean{Formalism.DivisionValues.divisor\_into\_dual\_shift}（\Lean{TwistedLatticeNaturality.lean:720}）；斜率等式 \Lean{Formalism.MainNotions.J.mu\_diff}（\Lean{SumLogPrimeFactorsLe.lean:380}）；拼格 \Lean{Formalism.L2.Indef.IndefData.RR}（\Lean{IndefSide.lean:281}）、\Lean{IndefRows.RR\_spec}（\Lean{IndefUse.lean:219}）。}
+
+\section{第五步：斜率的两面，整除性压住素数和}\label{sec:s5}
+
+这一节是 Stepanov 不等式在档案里的样子：周期的整除性（重数）把一个平均斜率从下面抬高，周期映射在复数处的大小（次数）把它从上面压住，两头一夹，就得到素数和的上界。
+
+\paragraph{素数和与总增益。} 把第四步各素位的增益按对数权重加起来：
+\[
+\mathrm{Ga}=\sum_w c_w\Bigl(\sum_{j=1}^{m}\mathrm{gainD}_j(w)-\tau_w\Bigr),\qquad c_w=\frac{2e_w\log N\mathfrak p_w}{[K:\Q]},
+\]
+按同一个有理素数合并后就是 $2\sum_p\log p\,(\sum_j\mathrm{gain}(j,p)-\tau(p))$，形状和第三步的 $\mathrm{ASK}$ 一样。档案证明 $\mathrm{ASK}-\mathrm{Ga}\le P$：
+\begin{itemize}
+\item 对保留下来的素数，局部增益足以支付 $\mathrm{ASK}$ 里该素数的贡献，只剩少数没有覆盖的顶端位置；
+\item 被筛掉的素数（太大的、Frobenius 分量阶太小的、幂落在某个窄带里的、某个符号和偏大的）整项计入损失；
+\item 这些损失按 $\sum\log p/p$ 一类的加权和控制，合计 $P=c\,n_T\,m\,b$，除以 $Q=n_Tmb$ 以后只是一个常数。
+\end{itemize}
+这里只用到单边估计，档案没有证明也不需要 $\mathrm{ASK}$ 和 $\mathrm{Ga}$ 近似相等。
+
+\paragraph{从下面抬高：除法。} 对链上的每个词 $u$，记 $M_u$ 为起始格，$N'_u$ 为第四步除法后的格。逐素位比较给出
+\[
+\mu(M_u)+\mathrm{Ga}+\mathrm{Fo}-\mathrm{Ee}(u)-\mathrm{Lo}_u\ \le\ \mu(N'_u),
+\]
+其中 $\mathrm{Fo}$、$\mathrm{Ee}(u)$ 是基础项和损失按同样权重的总和，$\mathrm{Lo}_u$ 是取整等带来的损失。
+
+\paragraph{从上面压住：映射的高度和族斜率不等式。} 周期映射 $B_u:N'_u\to RR^\vee$ 是整的，它的高度定义为无穷位上平方算子范数的对数平均，$h(B_u)=\frac1{\#\{v\mid\infty\}}\sum_{v\mid\infty}\log\|B_u\|_v^2\le h_u$；档案逐无穷位估计各层核算子的范数得到 $h_u$。高度预算是
+\[
+\mu(RR^\vee)+h_u-\mathrm{Fo}\ \le\ \mathrm{MAIN}(u)+E_{\mathrm{div}} .
+\]
+再对整个词族 $\mathcal W$ 用一个 Harder–Narasimhan 型的族斜率不等式：记 $s$ 为 $\mu(N'_u)-h_u$ 按秩加权的平均，
+\[
+s\ \le\ \mu(RR^\vee)+\log|\mathcal W|+\Phi_{\mathrm{frame}},
+\]
+$\Phi_{\mathrm{frame}}$ 是一个由斜率波动控制的修正项。单个词的 Bost 斜率不等式（非零整映射 $f:A\to B$ 满足 $\mu_{\min}(A)\le\mu_{\max}(B)+h(f)$）是它的特殊情形。
+
+\paragraph{两头一夹。} 把下界和高度预算合起来，再与族不等式比较，得到
+\[
+\mathrm{Ga}+\mu(RR^\vee)-K_5-\overline{\mathrm{Lo}}\ \le\ s\ \le\ \mu(RR^\vee)+\log|\mathcal W|+\Phi_{\mathrm{frame}},
+\]
+两端的 $\mu(RR^\vee)$ 消去，$K_5=\mathrm{Main}(u_0)+K_0$。再用 $\mathrm{ASK}\le\mathrm{Ga}+P$，就得到第三步需要的
+\[
+\mathrm{ASK}(u_0)-\mathrm{Main}(u_0)\ \le\ \mathrm{ErrX5at}(u_0).
+\]
+这对应 Stepanov 的“重数乘点数不超过次数”：每个素位、每一层的赋值是可以累加的重数；平均斜率记录这些重数的对数权重；无穷位的高度和族斜率上界起次数预算的作用。上界作用在整个词族的平均上，所以单个周期可以为零，不能把结论简化成“一个周期有很多素因子”。
+
+\paragraph{主项精确抵消。} 几何一侧的大项相减以后剩下的恰好是
+\[
+\mathrm{Main}(u_0)=\sum_{j,t}a_t\Bigl(\log a_t-1-\gamma+\Re\frac{L'}{L}(1,\chi_K)-\frac1{|\Phi|}\sum_{\rho\in\Phi}\log w_j(\rho)\Bigr),
+\]
+其中 $\chi_K$ 是模 $d$ 的二次特征：辅助素数 $g_0g_1$ 的对数项与损失里的同名项相消，$\log(\pi/v)$ 一类常数也相消，这是一个代数恒等式。算术一侧（第三步）由特征正交性减去的主项恰好是同一个数。所以两边的大主项不需要估差，几何一侧交出的 $\mathrm{ASK}-\mathrm{Main}$ 可以直接放进第三步的傅里叶公式。
+
+\paragraph{误差与链长。} $\mathrm{ErrX5at}$ 有八行：链上辅助素数个数的下界余项（来自质量公式与体积比）、除法的高度预算、逐层分母的比较余项 $m\,c_EB_0$、起始格的斜率下界、$\log|\mathcal W|$、局部损失 $P$、商格斜率的损失、族斜率不等式的修正。它们合并后提出一个公共因子 $x^{C\varepsilon}$（$C=e_D+e_L+3$，$e_D$、$e_L$ 是除法和损失两项的指数参数），剩下的拆成四项。记 $Y=x^{1/2+13\varepsilon/8}$，四项除以 $Q$ 后依次至多 $2Y$、$2Y$、$4Y$、$2Y$，所以 $E/Q\le10\,x^{C\varepsilon}Y$。第一项除以 $Q$ 后其实至多 $2x/m$，它就是“次数除以重数”，链越长越好，需要 $m\ge x^{1/2-\varepsilon}$；第二项除以 $Q$ 后约为 $xm/k$，由起始秩够大保证至多 $2$；第三项形如 $m\cdot 2nmb\,x^{\varepsilon}$，除以 $Q$ 后约与 $m$ 成正比，需要 $m\le x^{1/2+\varepsilon/2}$；第四项由集合大小控制。链长的具体取法在构造 \textsf{HypsAlt} 的见证时做出：不小于 $x^{1/2-\varepsilon/16}$ 的最小偶数。Alpöge 写道，长度约为 $\sqrt X$ 的链是 Claude 的建议\,\cite{alpoge}。精确减主项解决了中心化，$m\approx\sqrt x$ 解决了中心化以后的误差大小。
+
+\paragraph{收尾。} 把平衡式、$E/Q$ 的界、$\delta\ge x^{-\varepsilon}$ 和 $\Sigma_A\le4o\,x^{1/2+\varepsilon}$ 合在一起，得到 $G_m(x)\le x^{1/2+(e_D+e_L+7)\varepsilon}$。档案用的构造取 $e_D=2$、$e_L=0$，所以在窗口上 $G_m(x)\le x^{1/2+9\varepsilon}$。若有零点 $\Re\rho>1/2$，取 $\varepsilon$ 足够小，第二步的判据给出矛盾。
+
+\arch{总增益与损失 \Lean{Formalism.BasicNotions.SizeData₂.Ga}、\Lean{Fo}、\Lean{Ee}（\Lean{DataParams₂.lean:203--223}）；$\mathrm{ASK}-\mathrm{Ga}\le P$ \Lean{Formalism.LFunctionChainParameters.WeightedSlopeBounds.LossBounds}（\Lean{QuotientSlopeBoundsWith.lean:34--35}），由 \Lean{Loss7.losses\_of\_small\_share\_weight}（\Lean{LossRequirementsOfSmallShares.lean:86--160}）证明；斜率下界 \Lean{Formalism.MainNotions.Lnk.slopesN\_at\_of}（\Lean{TopDensityNGeSixteen.lean:1529}）；除法、整性、高度与斜率增量 \Lean{Formalism.L2.DIV.divClausesR\_of}（\Lean{ConstantGeTwentyEight.lean:184--247}）；高度预算 \Lean{Formalism.MainNotions.LinkDIV\_at}（\Lean{GlobalTheoremInputs.lean:77--90}）；族斜率不等式 \Lean{Formalism.HN.theoremFSharp\_of}（\Lean{TheoremFSharp.lean:324--386}），Bost 不等式 \Lean{Formalism.HN.slope\_inequality\_mean}（\Lean{SlopeIneqMean.lean:249}）；两头一夹 \Lean{WeightedSlopeBounds.Ga\_bound5}、\Lean{s\_lower5}、\Lean{key\_identity5}（\Lean{LevelOfCongruence.lean:17--160}）、\Lean{each\_unit\_bound\_statement}（同文件 175--197）；以上数据由 \Lean{Formalism.MainNotions.Lnk.linkCore}（\Lean{LossesSmallShares.lean:38--297}）装配；算术一侧主项 \Lean{Deduction.ch\_top\_main\_eq}（\Lean{ChTop.lean:11--35}）、逐点差额 \Lean{Deduction.ch\_top}（\Lean{ChTop.lean:37--72}）；八行 \Lean{ErrX5at}（\Lean{QuotientSlopeBoundsWith.lean:45--55}）及合并 \Lean{LErr.core\_ineq}（\Lean{SubThreeMulLogTwoLe.lean:13--208}）；四项 \Lean{ThickSetMeanBounds.proposition\_size\_bound}（\Lean{LipschitzWeightAndMinimum.lean:507--552}）；链长的上下界 \Lean{LChain.RestSize}（\Lean{SChain.lean:53}），具体取法 \Lean{GlobalTheory.Mem.Num.mAt}（\Lean{EvenCeil.lean:21}，属于输入的构造）；汇合点 \Lean{UpperTheory.Comparison₂.core\_gm}（\Lean{CoreGm.lean:12--74}）；$e_D=2$ 在 \Lean{UpperTheory.Top.shape\_closed\_link\_n\_of\_green}（\Lean{TopShape.lean:52}）。}
+
+\section{第六步：压住额外的整除性}\label{sec:s6}
+
+\paragraph{为什么需要。} 第四步用周期的整除性换取斜率。但特殊值的整除性也可能来自与链无关的算术对象，它们会在每层的预算里抵消第四步攒下的整除阶数。Alpöge 时间线第 14、17 条说，有些这样的整除性可以靠扭转消掉，消不掉的落在 $H^1(\mathcal O_E[1/\ell],\Q_\ell/\Z_\ell(-e))$ 的类里，对它们需要 Vandiver 猜想的一个弱化。经典的例子是 Herbrand–Ribet 定理：对奇素数 $p$、偶数 $2\le k\le p-3$，$p$ 整除 Bernoulli 数 $B_k$ 的分子，当且仅当 $\Q(\zeta_p)$ 的 $p$ 类群在 Teichmüller 特征 $\omega^{1-k}$ 下的分量非零\,\cite{herbrand,ribet}。在档案里，这类来路不明的整除性以 Tate–Shafarevich 型群长度的加权和进入每层的预算，必须给它一个上界。
+
+\paragraph{域和群。} 相关的域在同构意义下是 $E=K_\psi\cdot\Q(\zeta_{2^{a+2}})^+\cdot\Q(\sqrt{-q})\cdot\Q(\sqrt{-d})$，其中 $K_\psi$ 是 $\ker\psi$ 的固定域，$q,d$ 是满足一组同余和大小条件的辅助素数（$q\equiv3\bmod8$，$d\equiv7\bmod16$，$q\mid d+1$，小于某个界的奇素数都整除 $d+1$）。对素数 $\ell$ 和 $k\ge1$，令
+\[
+\Sha_{\ell,k}(E)=\ker\Bigl(H^1\bigl(G_{E,S_\ell},\Q_\ell/\Z_\ell(-k)\bigr)\to\prod_{v\mid\ell}H^1\bigl(G_{E_v},\Q_\ell/\Z_\ell(-k)\bigr)\Bigr),
+\]
+即在 $\ell$ 上方各处局部都看不见的全局类。\textsf{VWin} 断言：对每个本原 $\psi$、每个 $0<\varepsilon<1/52$ 和一族指定的“页函数”$a(x)$，可以找到一列区间 $[Y,Y^2]$，使其中每个 $x$ 和每个相应的域 $E$ 都满足
+\[
+\sum_{\ell\in S}\log\ell\sum_{1\le k<\lfloor x^{401}\rfloor}\operatorname{length}\Sha_{\ell,k}(E)\ \le\ \exp(x^{\varepsilon}/2)\qquad\text{对一切有限素数集 } S .
+\]
+
+\paragraph{证明分三块相加。} 总长度拆成三部分：素数 $2$ 的贡献，以及奇素数处按复共轭的特征值 $(-1)^{k+1}$ 和 $(-1)^k$ 分开的两个分量。
+\begin{itemize}
+\item \emph{素数 $2$。} 复共轭的分解要除以 $2$，在这里不能用。档案把域放进分圆塔，直接估计整个群，用到指数至多为 $2$ 的域扩张的计数。
+\item \emph{特征值 $(-1)^{k+1}$ 的分量。} 用 Stickelberger 元和广义 Bernoulli 数控制，这是经典分圆理论能处理的那一半。
+\item \emph{特征值 $(-1)^k$ 的分量。} 它对应 Vandiver 猜想所关心的那一半，没有 Bernoulli 数那样的解析公式可用，是困难的部分。档案分五类（I 到 V）计数，汇合引理一次接收其中四类。各类估计的都是带局部条件的一阶 Galois 上同调群的长度。第 I 类一次控制对素数和特征的加权总和，用到 Kato 欧拉系推出的两个二维 Bloch–Kato Selmer 群的消失（Kato 的部分在档案里证明），以及伴随提升；第 II、III 类逐个估计，用的是自守的四维辛 Galois 表示处形变的刚性，加上像的稠密性；第 V 类用 $\Q(i)$ 上一个三维的 $R=T$ 型定理：泛形变的权部分有限，且相关的点都是自守的；第 IV 类借分圆塔有限层上的界，用转移论证处理。几类共同依赖的形变结论是：在自守点处（维数 $2$ 到 $4$），满足 Bloch–Kato 条件的伴随上闭链都是上边缘，所以一阶形变只有平凡的方向。
+\end{itemize}
+
+\paragraph{困难分量的内部。} Kato 那部分在档案里有具体构造：用 Kato 的 $c$-theta 函数显式写出模曲线上的两枚 Siegel 单位，用它们造出 Kummer 类，沿分圆塔范数相容，得到 Euler 系统形状的一族上同调类；其中一个类在指定素点处不消失，再配合 Poitou–Tate 和局部 Tate 对偶，推出两个二维 Bloch–Kato Selmer 群为零。伴随 Selmer 群的消失走 Taylor–Wiles 的路线：用 Chebotarev 定理选辅助素点，把普通上闭链变成普遍行列式环在自守点处的导子，再借 Hida–Hecke 理想证明这个导子为零。这些结论在档案里只证到论证需要的特殊情形。
+
+\paragraph{选窗口。} 分圆塔还用来挑区间。Ferrero–Washington 定理在这里以“沿分圆塔，类群模 $\ell$ 的大小一致有界”的形式出现\,\cite{fw}。由此，在一道很高的扭转上限以内，只有少数扭转次数会特别靠近某个 $\ell$ 进的“中心”，它们是例外。调整尺度，使例外都落在较小的扭转范围，再用独立的上同调估计处理它们。
+
+\paragraph{指数的来历。} 这些大指数是几处粗略估计相乘的结果，各有余量。
+\begin{itemize}
+\item $377=28\cdot12+41$ 是一个上游参数，$T_O=\lceil x^{377}\rceil$ 要压住一个乘积，而那个乘积只到 $x^{376}$。
+\item 秩估计里取 $y=x^{1/100}$，有 $n_W\le5288\,y^{2267}$、$T_O\le2\,y^{37700}$，乘积 $10576\,y^{39967}$；连同其余项，整个秩不超过 $10708\,y^{39967}\le y^{40000}=x^{400}$。
+\item 最后为了调整常数做尺度变换 $x=\lambda x'$，取 $x'\ge\lambda^{400}$，于是 $x^{400}\le x'^{401}$。所以 $401$ 记录的是窗口必须覆盖多高的扭转，它不是某个 $\Sha$ 群的临界指数。
+\end{itemize}
+在第四步里，这个上界以 $\sqrt b$ 的形式进入（$b$ 是一个指数尺度），由 $\sqrt b\le b$ 吸收。
+
+\paragraph{和 Vandiver 猜想的关系。} Vandiver 猜想说，对每个素数 $p$，$p\nmid h\bigl(\Q(\zeta_p)^+\bigr)$。Kurihara 把它和整数的 $K$ 群联系起来\,\cite{kurihara}，现代表述中它与“所有 $K_{4n}(\Z)=0$”等价\,\cite{weibel}。Alpöge 称 \textsf{VWin} 是“Vandiver 的一个显著弱化”，并说他相信由此能推出整数若干 $K$ 群的消失\,\cite{alpoge}。档案里没有在 \textsf{VWin} 和 Vandiver 猜想之间建立形式上的推出关系。\textsf{VWin} 控制的是一个随 $x$ 增长的总量，单看这个不等式推不出某个固定的类群分量消失。
+
+\arch{\Lean{UpperTheory.Top.VWin}、\Lean{VWinAt}、\Lean{VVle}、\Lean{IsChiField}、\Lean{WinPair}（\Lean{ExistsPageN.lean:12--50}）；$\Sha$ 与长度 \Lean{Formalism.GaloisCohomology.Sha}、\Lean{shaLen}（\Lean{GaloisCohomology/Statement.lean:54--78}）；三块相加 \Lean{UpperTheory.V.vvle\_of\_parts}（\Lean{LengthEqAddEigen.lean:127}），两个分量 \Lean{ShaPlus}、\Lean{ShaMinus}（\Lean{LengthEqAddEigen.lean:68--76}）；四类计数 \Lean{UpperTheory.V.HV.CountI}--\Lean{CountV}（\Lean{HeightAndVanishing/Counts.lean:53--69}）、\Lean{countIV}（\Lean{CountIV.lean:39--89}），汇合于 \Lean{UpperTheory.V.HV.Core.of\_four\_alt}（\Lean{HVCore.lean:18--22}）；第 IV 类的陈述在 \Lean{LayerLe.lean:21--25}；Kato 输入 \Lean{KatoTwoW}（\Lean{KatoTwoW.lean:10--14}），由 \Lean{katoTwoW\_of\_printsH}（\Lean{KatoTwoWOfPublishedH.lean:48}）证明；四维辛点的刚性 \Lean{UpperTheory.V.Th.rigSp4\_alt}（\Lean{RigSp4.lean:181--194}）；三维 $R=T$ 型定理 \Lean{UpperTheory.V.Aut.ThmS6Core\_s}（\Lean{ThmS6CoreS.lean:27--36}）；伴随上闭链为上边缘 \Lean{AdZero}（\Lean{OrdZero.lean:68--73}）；各类汇合于 \Lean{vwin\_of\_hypotheses\_H\_E\_alt}（\Lean{WindowBoundOfLiteratureLevel.lean:25--29}）；Ferrero–Washington \Lean{UpperTheory.V.FW.ferreroWashington}（\Lean{FerreroWashington.lean:7--11}）；指数 \Lean{Formalism.MainNotions.PageFix}（\Lean{PageFix.lean:9--18}）、\Lean{UpperTheory.Top.eventually\_rank\_le\_rpow\_of\_lt\_one\_div\_fiftytwo}（\Lean{EventuallyRankLeRpowOfLtOneDivFiftytwo.lean:34--126}）、\Lean{UpperTheory.Top.winPairs}（\Lean{WinPairs.lean:74--81}）。\textsf{VWin} 的证明入口是 \Lean{UpperTheory.One.vwin\_of\_row}（\Lean{VwinOfRow.lean:4}）。}
+
+\section{三个输入从哪里来}\label{sec:inputs}
+
+最终证明的主链是：\Lean{allChi} 来自 \Lean{everyCharacter}，后者把一个“极化尖点表示的 Galois 表示存在且局部相容”的定理代入，经过汇集文献命题的定理，交给接收三个输入的 \Lean{every\_character\_of\_green\_v\_win}。下面分别说三个输入。
+
+\paragraph{\textsf{Green}：有限群的特征标。} \textsf{Green} 是 J.~A.~Green 1955 年关于有限一般线性群特征标理论的一部分\,\cite{green}。档案的表述是：对素数 $p$ 和 $d>0$，$GL_d(\mathbf F_p)$ 的尖点不可约复特征标与 $\mathbf F_p$ 上次数为 $d$、常数项非零的首一不可约多项式一一对应，特征标的次数是 $\prod_{i=1}^{d-1}(p^i-1)$，并且在特征多项式不可约的元素上有明确的取值公式；这个公式依赖一份固定的标签数据（有限域乘法群的生成元和一个 Teichmüller 型嵌入）。档案自己证明了它：先按有限域乘法群的正则特征标的 Frobenius 轨道构造尖点特征标，用根的幂和与不变子空间上的 Möbius 反演计算取值，用计数排除遗漏；再把标签从特征标换成不可约多项式。在主链上，\textsf{Green} 用来验证标签权重满足容许条件。
+
+\paragraph{\textsf{VWin}：从 Galois 表示到上同调窗口。} \textsf{VWin} 的证明从极化尖点表示的 $\ell$ 进 Galois 表示出发，用酉群的基变换把酉群表示转成各 $GL_{n_i}$ 上的数据，再汇集四组输入：局部表示论，自守表示与基变换，Galois 上同调（Poitou–Tate 对偶、局部 Tate 对偶、Euler 特征公式、Greenberg–Wiles 公式、Bloch–Kato 局部条件），以及 CM 阿贝尔簇（CM 主定理、Serre–Tate、Grothendieck 形变、Hecke–Tate 函数方程）。然后按第~\ref{sec:s6} 节的方式分块计数、相加。
+
+\paragraph{\textsf{HypsAlt}：一套互相相容的数据。} \textsf{HypsAlt} 是一个有 46 个字段的结构，要求存在\emph{同一个}族类 $\mathcal A$、同一组选择 $\sigma$ 和一个阈值函数，使正定侧的列链、不定侧的行、周期与扭曲周期、计数、格和质量公式等条件同时成立。档案先用 theta 对应（Howe 对偶、Siegel–Weil 公式、Rallis 内积公式、加倍积分）给出有限组线性泛函，它们的公共核为零，在指定测试向量上的值落在数域里；用算术几何（零特征的奇点消解、Siegel 模空间的环面紧化、算术 Hilbert–Samuel 定理与高度）限制相关格的余体积；用局部 Langlands 和 $p$ 进 Hodge 理论提供局部参数和误差估计。最后取一个共同的阈值，一次选出满足全部条件的一套对象，逐个字段填上。
+
+\paragraph{文献命题在档案里是什么形式。} 档案用一个结构 \Lean{OpenLiteratureStatements} 汇集外部文献命题，它恰有三个字段：两个关于极化尖点表示的 Galois 表示，一个关于局部 Langlands 对应的存在性。档案里约 185 个以 \Lean{\_of\_literature} 等命名的文献入口都以这个结构为参数，其中有的从三个字段推出，有的不用这些字段、直接引用档案自己的证明（例如 Green 的分类）。三个字段在 \Lean{MainConclusion.lean:7--11} 由档案内的定理填上，填进去的是论证够用的形式，比文献里的完整定理弱。
+\begin{itemize}
+\item \emph{Galois 表示。} 对 CM 域上正则代数、极化的尖点表示，档案构造了连续、半单的 $\ell$ 进 Galois 表示。奇数秩的情形从一族阿贝尔概形纤维幂的 étale 上同调出发：上同调用 Mathlib 的 étale 景和内射分解定义，Galois 群在上面作用，Hecke 对应的共同特征空间给出所需的表示；再用 Frobenius 迹的同余逼近和伪特征标取极限，处理一般的权。偶数秩的情形把表示用 theta 提升两次送到同一个奇数秩，两次提升额外带进的一维成分互不相同，去掉它们取公共部分。这条构造在档案里有实际内容：模空间对任意测试概形的表示性有证明；Hecke 对应算子的存在性逐个证明；Satake 多项式零化 Frobenius 来自特殊纤维上的 Hecke–Frobenius（Eichler–Shimura 型）关系；étale 上同调的基础从五条基本事实（仿射曲线上的消失、一种基变换、$\mathbf A^1$ 同伦不变性、Laurent 多项式环的计算、射影丛公式）出发，Poincaré 对偶和 Lefschetz 公式由它们推出；偶数秩时用 Brauer–Nesbitt 定理逐个拆去辅助的一维成分。档案证明了 Hodge–Tate 权的公式，以及\emph{部分}局部整体相容：在不整除 $\ell$ 的素位上，一般只保证维数相等；Weil 作用经交换化分解且单值算子为零时，局部参数相等；局部域是 $\Q_p$、参数驯顺且单值算子为零时，惯性元素的特征多项式相等。$\ell$ 上方另有晶体和潜半稳定的条件。文献里完整的局部整体相容（Shin、Chenevier–Harris、Caraiani）在档案里有陈述，最终证明没有用它\,\cite{shin,ch,caraiani}。
+\item \emph{局部 Langlands。} 档案对每个 $p$ 进局部域构造并证明了一个弱化的对应。对一类“好”的表示，它被唯一确定，并满足扭转、中心特征、对偶、单射、深度等标准性质；“好”指超尖支集里的每个成分都是一维特征，或者（在局部域恰好是 $\Q_p$ 时）是深度零超尖表示的扭。在这些表示上，一维时它就是局部类域论，深度零时它与 Deligne–Lusztig 理论给出的类型相容。对其余的超尖表示，它取一个只保持维数和中心特征绝对值的占位参数；只要局部域不是 $\Q_p$ 本身，维数至少为 $2$ 的超尖表示都属于这一类。完整的局部 Langlands 对应（Harris–Taylor、Henniart、Scholze）也在档案里有陈述，最终证明没有用它\,\cite{ht,henniart,scholze}。
+\end{itemize}
+最终命题用的是 Mathlib 对 $\zeta$、$L(s,\chi)$ 和黎曼猜想的定义，中间概念取什么形式不改变它的含义。
+
+\arch{三个字段 \Lean{UpperTheory.LiteratureTheorems.OpenLiteratureStatements}（\Lean{EveryCharacterOfLiteratureOfVWin.lean:215--218}），在 \Lean{MainConclusion.lean:8} 填为 \Lean{⟨h, recTExists, h⟩}。Galois 表示：陈述 \Lean{UpperTheory.One.M.Row}，展开为 \Lean{UpperTheory.GalStar.Row0b}、\Lean{PropsB}、\Lean{AwayB}、\Lean{AboveB}（\Lean{WeightsConjBis.lean:26--73}）；证明 \Lean{UpperTheory.Gal.Int.galoisLocalGlobalStrong\_recParameter}（\Lean{RowSrc.lean:6}），先证更强的 \Lean{Row0} 再弱化；上同调表示 \Lean{UpperTheory.Gal.Int.Geo.repEx\_of}（\Lean{RepAsm.lean:13--60}），取极限 \Lean{GlobalTheory.Cong.exists\_limit\_rep}（\Lean{ExistsLimitRep.lean:14--29}），偶数秩 \Lean{UpperTheory.Gal.TP.twoUpOK\_of\_steps}（\Lean{TwoUpOKOfSteps.lean:13--32}）与 theta 提升 \Lean{UpperTheory.TP.K.tLiftK}。局部 Langlands：陈述 \Lean{UpperTheory.Zero.LLC.IsRecT}、\Lean{LawsT}、\Lean{Good}（\Lean{IsRecTOfIsRec.lean:20--85}），证明 \Lean{UpperTheory.Zero.LLC.recTExists}（\Lean{RecTExists.lean:20--66}），占位参数在 \Lean{cuspEx}（\Lean{CuspEx.lean:168--266}），唯一性 \Lean{recTUnique}（\Lean{RecTUnique.lean:28--54}）。完整版本的陈述：\Lean{GlobalTheory.Published.PolarizedGaloisRepPublished}、\Lean{CaraianiLocalGlobalDual}、\Lean{GlobalTheory.LocLanglands.Laws}（\Lean{LocalLanglandsGL.lean:29--73}）。}
+
+\arch{主链 \Lean{allChi}（\Lean{Supplements/Kernels/MainTheorems.lean:7}）、\Lean{UpperTheory.Top.every\_character\_of\_green\_v\_win}（\Lean{TopPlug.lean:16--18}）、\Lean{UpperTheory.FinalTheorems.everyCharacter}、\Lean{everyCharacter\_of\_row}（\Lean{MainConclusion.lean:7--11}）、\Lean{UpperTheory.LiteratureTheorems.every\_character\_of\_literature\_of\_vWin}（\Lean{EveryCharacterOfLiteratureOfVWin.lean:810}）、\Lean{UpperTheory.Lit.every\_character\_of\_theta\_integrals\_local\_matching}（\Lean{SiegelEisensteinSecondTermHypotheses.lean:69--73}）。\textsf{Green}：定义 \Lean{GlobalTheory.GLq.Green}（\Lean{LabelDatum.lean:108}），证明 \Lean{GlobalTheory.greenRegularCharacters\_holds}（\Lean{GreenCuspidalCharsByRegularCharsProof.lean:137}）与 \Lean{GlobalTheory.GreenBridge.green\_of\_regular}（\Lean{SumRangeEqRoots.lean:225}）。\textsf{VWin}：\Lean{UpperTheory.One.vwin\_of\_row}（\Lean{VwinOfRow.lean:4}）、\Lean{UpperTheory.One.Join.automorphic\_window\_of\_inputs}（\Lean{TopMainZj.lean:71}）。\textsf{HypsAlt}：结构 \Lean{GlobalTheory.Fc.HypsAlt}（\Lean{ThirdPlaceSeries/Hyps.lean:22--90}），见证 \Lean{UpperTheory.Lit.nonempty\_hyps\_definite\_side\_of\_closed\_bound}（\Lean{SiegelEisensteinSecondTermHypotheses.lean:44--68}）、\Lean{GlobalTheory.Fc.nonempty\_hyps\_of\_allRows\_alt}（\Lean{NonemptyHypsOfAllRows.lean:19--101}）。}
+
+\section{档案本身}\label{sec:archive}
+
+\paragraph{规模。} 档案有 175{,}187 个文件、17{,}374{,}270 行，没有一句注释。“三个输入推出黎曼猜想”这一段的 import 闭包有 17{,}279 个文件、约 300 万行。从最终定理出发沿证明项统计，这一段实际用到 96{,}541 个档案声明，分布在 5{,}683 个文件里，按声明在源码中所占的行数计约 68 万行，占这一段 300 万行的 23\%。%%SLIM%%
+
+\paragraph{同一个结论，好几个版本。} 档案里常有同一个结论的几个版本，只有一个在最终证明的路径上。例如第四步的整除性下界，最终证明用的是 \Lean{Adm2InU.admissible\_level\_two}，另有一个结论相同、前提不同的 \Lean{l2\_bound\_of\_inputs}；第四步并入第三步的误差，最终证明走 \Lean{Lnk.linkCore}，另有一个 \Lean{linkGLOBAL\_of}；顶层也有接收 \Lean{Hyps} 和接收 \Lean{HypsAlt} 的两套接口，\Lean{Main.lean} 用的是后者。
+
+\paragraph{没有用上的分支。} 也有整条用不上的分支。第四步附近有一个接口 \Lean{ThetaChainStatement}，描述沿 theta 链的尖点下降与终点辨认；用到它的两条线最后都通向没有任何使用者的声明（如 \Lean{chainD}）。这条分支本身有完整的证明，也调用了除法定理，只是最终证明没有走它。档案里还留有“逐层成本”的计算（把相邻两层的秩相乘再沿链相加），以及一个明确写出“某项支出超出原有预算”的命题，它们最接近 Alpöge 时间线第 14 条描述的困难。
+
+\paragraph{公理。} 源码中没有 \Lean{axiom}、\Lean{sorry} 或 \Lean{opaque}；最终定理只依赖 Lean 的三条标准公理，这一点由 Sutherland 的检查确认。外部文献命题在档案里的形式见第~\ref{sec:inputs} 节。
+
+\section{还没弄清的地方}\label{sec:open}
+
+下面这些问题关系到“为什么这样设计”，不影响正确性。
+\begin{itemize}
+\item \emph{$2/3$ 的旧路线。} 时间线说按每次提升的先验成本只能推到 $2/3$。档案里留有逐层成本的计算和一个“支出超出预算”的命题，但没有把它们接到 $2/3$ 的那一步。
+\item \emph{局部 theta 核的条件。} 第四步的局部机制要求 theta 核满足 $\exp(-\Phi)\cdot U$ 型的条件（Dwork 型引理等），这些条件对实际 theta 核成立的证明属于输入一侧，我们没有逐条读。
+\item \emph{窗口判据的文献位置。} 档案证明的“积分上界”版本，在文献里是否已有同样的陈述，我们没有找到。
+\item \emph{困难分量的深处。} 第六步各类计数追到了 Kato 欧拉系、Taylor–Wiles 辅助素点和 Hida 理想这一层；三维 $R=T$ 型定理和四维辛点刚性的完整证明没有逐层读。
+\item \emph{常数是否最优。} $377$、$401$ 等常数各处都留有余量，整份构造能把它们降到多少，需要同时调整上下游参数。
+\item \emph{三个输入的底层。} 模空间的存在性、晶体比较定理、Lefschetz 公式等底层结果，我们只核对了题目和调用位置，没有逐个审读证明。它们的正确性由 Lean 检查保证，审读的目的是弄清档案用了什么形式。
+\end{itemize}
+
+\input{appendix_decls}
+
+\begin{thebibliography}{99}\small
+\bibitem{sutherland} A.~V.~Sutherland, \emph{Verification files for the Lean proof of the Riemann Hypothesis}, \url{https://math.mit.edu/~drew/grh/}.
+\bibitem{alpoge} L.~Alpöge, remark on the proof, \url{https://alpo.ge/remark.pdf}, 20 November 2026.
+\bibitem{stepanov} S.~A.~Stepanov, On the number of points of a hyperelliptic curve over a finite prime field, \emph{Izv. Akad. Nauk SSSR Ser. Mat.} 33 (1969), 1171--1181.
+\bibitem{bombieri} E.~Bombieri, Counting points on curves over finite fields (d'après S.~A.~Stepanov), \emph{Séminaire Bourbaki} 430 (1973).
+\bibitem{hks} M.~Harris, S.~S.~Kudla and W.~J.~Sweet, Theta dichotomy for unitary groups, \emph{J. Amer. Math. Soc.} 9 (1996), 941--1004.
+\bibitem{cs} S.~Chowla and A.~Selberg, On Epstein's zeta-function, \emph{J. Reine Angew. Math.} 227 (1967), 86--110.
+\bibitem{herbrand} J.~Herbrand, Sur les classes des corps circulaires, \emph{J. Math. Pures Appl.} 11 (1932), 417--441.
+\bibitem{ribet} K.~A.~Ribet, A modular construction of unramified $p$-extensions of $\mathbf{Q}(\mu_p)$, \emph{Invent. Math.} 34 (1976), 151--162.
+\bibitem{fw} B.~Ferrero and L.~C.~Washington, The Iwasawa invariant $\mu_p$ vanishes for abelian number fields, \emph{Ann. of Math.} 109 (1979), 377--395.
+\bibitem{kurihara} M.~Kurihara, Some remarks on conjectures about cyclotomic fields and $K$-groups of $\mathbf{Z}$, \emph{Compositio Math.} 81 (1992), 223--236.
+\bibitem{weibel} C.~Weibel, Algebraic $K$-theory of rings of integers in local and global fields, in \emph{Handbook of $K$-Theory}, Springer, 2005, 139--190.
+\bibitem{green} J.~A.~Green, The characters of the finite general linear groups, \emph{Trans. Amer. Math. Soc.} 80 (1955), 402--447.
+\bibitem{shin} S.~W.~Shin, Galois representations arising from some compact Shimura varieties, \emph{Ann. of Math.} 173 (2011), 1645--1741.
+\bibitem{ch} G.~Chenevier and M.~Harris, Construction of automorphic Galois representations, II, \emph{Camb. J. Math.} 1 (2013), 53--73.
+\bibitem{caraiani} A.~Caraiani, Local-global compatibility and the action of monodromy on nearby cycles, \emph{Duke Math. J.} 161 (2012), 2311--2413; Monodromy and local-global compatibility for $\ell=p$, \emph{Algebra Number Theory} 8 (2014), 1597--1646.
+\bibitem{ht} M.~Harris and R.~Taylor, \emph{The Geometry and Cohomology of Some Simple Shimura Varieties}, Princeton University Press, 2001.
+\bibitem{henniart} G.~Henniart, Une preuve simple des conjectures de Langlands pour $GL(n)$ sur un corps $p$-adique, \emph{Invent. Math.} 139 (2000), 439--455.
+\bibitem{scholze} P.~Scholze, The local Langlands correspondence for $GL_n$ over $p$-adic fields, \emph{Invent. Math.} 192 (2013), 663--715.
+\bibitem{landau} E.~Landau, Über einen Satz von Tschebyschef, \emph{Math. Ann.} 61 (1905), 527--550.
+\bibitem{widder} D.~V.~Widder, \emph{The Laplace Transform}, Princeton University Press, 1941, Chapter II.
+\bibitem{kp} J.~Kaczorowski and J.~Pintz, Oscillatory properties of arithmetical functions.~I, \emph{Acta Math. Hungar.} 48 (1986), 173--185.
+\end{thebibliography}
+\end{document}

@@ -4,10 +4,10 @@ import Development.AutomorphicArithmetic.ThetaCorrespondence.ThetaPairLifts.Thir
 /-!
 # A roadmap through the Alpöge–Claude proof of RH and Dirichlet GRH
 
-This file adds no mathematics. It restates, with the archive's own theorems, the top of the
-proof: Riemann's hypothesis follows from three inputs (`Green`, `VWin`, `HypsAlt …`).
-Everything below the three inputs (the published-literature foundations and the theta-lift
-machinery that discharges them) is left to the archive.
+This file restates the top of the proof with the archive's own theorems: Riemann's hypothesis
+follows from three inputs (`Green`, `VWin`, `HypsAlt …`). The three inputs, the theta-lift
+machinery behind them and the published-literature foundations are proved in the rest of the
+archive.
 -/
 
 open Formalism.BasicNotions Formalism.MainNotions GlobalTheory.Fc

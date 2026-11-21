@@ -1,0 +1,352 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[htt]{hyphenat}
+\usepackage{booktabs,tabularx,longtable,array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black]{hyperref}
+
+\newcommand{\Lean}[1]{\texttt{\small #1}}
+\newcommand{\arch}[1]{\par\medskip{\small\raggedright\noindent\textsf{In the archive}\quad #1\par}\medskip}
+\newcommand{\Q}{\mathbf{Q}}
+\newcommand{\Z}{\mathbf{Z}}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\Sha}{\mathrm{Sha}}
+\renewcommand{\Re}{\operatorname{Re}}
+\renewcommand{\Im}{\operatorname{Im}}
+\setlist{itemsep=2pt,topsep=4pt}
+\sloppy\emergencystretch=4em
+
+\title{\textsf{Reading the Lean Proof of the Riemann Hypothesis}\\[4pt]\large A step-by-step guide to the Alpöge archive}
+\date{November 2026}
+\author{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+On 20 November 2026, Levent Alpöge announced Lean proofs of the Riemann hypothesis and the generalized Riemann hypothesis for Dirichlet $L$-functions, completed in collaboration with Claude. The proof consists of an uncommented Lean archive of about 17.4 million lines, which several independent checkers have accepted. Following the logical order of the proof, this article translates the arguments in the archive into mathematical language. It explains how the final statements reduce to the absence of zeros to the right of the critical line; how this reduces to a one-sided prime-sum estimate on a sequence of intervals; how a theta lift chain of length about $\sqrt x$ provides this estimate, with divisibility of periods playing the role of ``multiplicity'' in Stepanov's method; how the auxiliary characters that enter the argument are controlled by choosing auxiliary primes; how an upper bound for Tate--Shafarevich-type groups bounds the extra divisibility; and, finally, where the three top-level inputs occur in the archive and which theories prove them. Each section gives declaration names and locations in the archive so that readers can check them individually.
+\end{abstract}
+
+\section*{Before reading}
+\begin{itemize}
+\item \textbf{What has been verified.} The correctness of the archive is guaranteed by the Lean kernel and the several independent checkers collected by Sutherland\,\cite{sutherland}. When this article says that ``the archive proves'' a statement, it means that the statement is a checked Lean theorem in the archive; we supply the mathematical translation.
+\item \textbf{How we read it.} We compiled locally the part deriving the Riemann hypothesis from the three inputs (17{,}279 files), traced the proof terms from the final theorem to count the declarations actually used, and built a source index for the entire archive. Several AI models divided the detailed tracing among themselves. Every conclusion was required to include declaration names and line numbers, and a model from another provider checked it against the source. The archive locations preferentially list the versions actually used by the compiled proof. The archive often contains several versions of the same conclusion, only one of which lies on the path to the final proof.
+\item \textbf{How locations are written.} ``\Lean{SigALe.lean:38}'' gives a filename and line number; full paths appear in the appendix. We use the archive version with SHA-256 \Lean{9631b4f0\ldots c7fc}, the version checked by Sutherland.
+\item \textbf{Authorship.} An independent author set the direction and made the choices; several AI models, including Anthropic's Claude, read the archive, wrote the text, and cross-checked it. Alpöge works at Anthropic. This article is independent of him and Anthropic.
+\end{itemize}
+
+\section*{The shape of the proof}\label{sec:shape}
+
+The entire proof can be outlined in six sentences, corresponding to the six steps below.
+\begin{enumerate}
+\item It suffices to prove that every Dirichlet $L$-function has no zeros in $\Re s>1/2$. The functional equation reflects the left half of the critical strip into the right half, and the Riemann hypothesis is the case of the trivial character modulo $1$.
+\item A Landau-type positivity argument reduces the task to a one-sided estimate in which a weighted, centered prime sum $G_m(y)$ is everywhere at most $y^{1/2+O(\varepsilon)}$ on a sequence of increasingly distant intervals $[Y,Y^{3/2}]$.
+\item This prime sum can be decomposed into counts over individual Frobenius classes of a finite abelian Galois group; after averaging over a subgroup, precisely the target characters remain, together with several groups of quadratically twisted ``companion characters,'' which are controlled by choosing a pair of auxiliary primes for each interval.
+\item There is no differentiation over the integers, and ``multiplicity'' is produced by a theta lift chain of length about $\sqrt x$; each lift takes high-order derivatives of the theta kernel as prescribed by the weight, and the prime factors contributed by the factorials, after subtracting what the denominators can cancel, give a computable increase in the divisibility of periods at each prime, valid on the entire lattice.
+\item Dividing the lattice by these prime factors raises its slope by exactly a logarithmically weighted prime sum; the size of the period map at the complex places and a slope inequality for a family give an upper bound for the same slope, yielding the Stepanov-type inequality ``multiplicity times number of points is at most degree,'' with exact cancellation of the main terms and a square-root error when the chain length is $\sqrt x$.
+\item Extra divisibility unrelated to the chain is controlled by an upper bound for the total length of Tate--Shafarevich-type groups over a family of cyclotomic subfields.
+\end{enumerate}
+
+In Lean, the arguments in steps 3 through 6 start from three inputs: a classification of cuspidal characters of the finite groups $GL_d(\mathbf F_p)$ (\textsf{Green}), a window bound for Tate--Shafarevich-type groups (\textsf{VWin}), and a full set of mutually compatible theta chain data (\textsf{HypsAlt}). We compiled and machine-verified locally the part deriving the Riemann hypothesis from the three inputs. The inputs themselves are proved in the rest of the archive; Section~\ref{sec:inputs} maps them out.
+
+\section{The five main theorems and the first step}\label{sec:s1}
+
+\paragraph{The five main theorems.} \Lean{Main.lean} proves five theorems: the Riemann hypothesis as defined in Mathlib; another formulation of the Riemann hypothesis ($\Re s=1/2$ whenever $\zeta(s)=0$, $s\ne1$, and $s$ is not a negative even integer); for every Dirichlet character $\chi$ modulo $N\ge1$, nonvanishing $L(s,\chi)\ne0$ when $\Re s>1/2$ (the $L$-function of the principal character has a pole at $s=1$, where Mathlib assigns the function a value, so this point is excluded); all zeros with $0<\Re s<1$ lie on $\Re s=1/2$; and a version of the same conclusion for primitive characters. The proofs of all five theorems converge on a single theorem, \Lean{allChi}, asserting that all Dirichlet $L$-functions are zero-free in $\Re s>1/2$. Dedekind $\zeta$-functions of general number fields are outside the scope.
+
+\paragraph{Step 1. Looking to the right of the critical line.} For a primitive character $\chi$, the functional equation relates $L(s,\chi)$ to $L(1-s,\overline\chi)$. The root number is nonzero, and the archimedean Gamma factor is holomorphic and nonzero in $\Re s>0$, so a zero in $0<\Re s<1/2$ reflects to a zero in $1/2<\Re s<1$. The $L$-function of an imprimitive character is the $L$-function of the corresponding primitive character multiplied by finitely many Euler factors $1-\chi^*(p)p^{-s}$, which are nonzero in $\Re s>0$. The Riemann hypothesis is the case of the trivial character modulo $1$, whose $L$-function is $\zeta$. Nonvanishing on $\Re s\ge1$ is taken directly from Mathlib.
+
+\arch{\Lean{allChi}, \Lean{rhOfAll}, \Lean{critAll}, \Lean{claimAll} (\Lean{Supplements/Kernels/MainTheorems.lean:7--16}); \Lean{Formalism.VW.rh\_of\_every}, \Lean{Formalism.VW.critLine} (\Lean{CritLine.lean:11--32}); \Lean{Claim.strip} (\Lean{ClaimStrip.lean:59--73}); \Lean{UpperTheory.Top.imprimitive}.}
+
+\section{Step 2. The Landau window criterion}\label{sec:s2}
+
+\paragraph{The quantity to estimate.} Fix a primitive character $\psi$ of order $o$, and let $\mathcal X$ be the $o$ primitive characters induced by the powers of $\psi$. Write $\Lambda$ for the von Mangoldt function and $\gamma$ for Euler's constant. For $y\ge1$, set
+\[
+G_z(y)=\sum_{n\le y}\Lambda(n)\Bigl(\frac yn-1\Bigr)-y\log y+(1+\gamma)y,\qquad
+g_\chi(y)=\sum_{n\le y}\Lambda(n)\chi(n)\Bigl(\frac yn-1\Bigr)+y\,\frac{L'}{L}(1,\chi)\quad(\chi\ne1),
+\]
+\[
+G_m(y)=G_z(y)+\frac1{3o+1}\sum_{\chi\in\mathcal X,\ \chi\ne1}\Re g_\chi(y).
+\]
+The subtracted part is exactly the ``main term'' of the prime sum, and $G_m$ is the centered error. The coefficient $1/(3o+1)$ is chosen because $\bigl|\sum_{\chi\ne1}\Re\chi(n)\bigr|\le o-1<3o+1$, making the coefficients of the prime-sum part of $G_m$ nonnegative, as required by the classical Landau theorem. The window version proved in the archive uses less positivity. It uses only the positive weights of the characters and the identity in item 3 below.
+
+\paragraph{The window criterion.} The archive proves the following statement. Let $0<\theta<1$, $\delta>0$, and let $C$ be a constant. If for every $Y_0$ there is a $Y\ge Y_0$ such that $G_m(y)\le Cy^\theta$ holds on the \emph{entire} interval $[Y,Y^{1+\delta}]$, then every $L(s,\chi)$ with $\chi\in\mathcal X$ has no zeros in $\Re s>\theta$. Only a one-sided upper bound is needed, and only on a sequence of intervals; the gaps between intervals can be arbitrarily large. The final proof takes $1+\delta=3/2$ and $C=1$.
+
+\paragraph{The four steps of the proof.}
+\begin{enumerate}
+\item \emph{Zeros become poles.} Set $g(u)=G_m(e^u)$. Its Laplace transform is the Mellin transform of $G_m$. For a nontrivial character, in $\Re s>1$ we have
+\[
+\int_1^\infty g_\chi(y)\,y^{-s-1}\,dy=-\frac{(L'/L)(s,\chi)-s\,(L'/L)(1,\chi)}{s(s-1)} .
+\]
+A zero of multiplicity $m$ of $L(s,\chi)$ at $\rho$ gives a simple pole of $L'/L$ with residue $m$, so the transform has a simple pole at $\rho$ with residue $m/(\rho(1-\rho))$.
+\item \emph{The residues do not cancel.} Taking real parts gives $\chi$ and $\overline\chi$ half the weight each. The residue of the transform for the entire family at $\rho$ is $S_\rho/(\rho(1-\rho))$, where $S_\rho$ is the sum of the zero multiplicities with positive weights and is strictly positive. The residue is therefore nonzero, and zeros of different characters do not cancel. If $\rho=\beta$ is real, zero-freeness on $\Re s\ge1$ gives $0<\beta<1$, and the residue is positive.
+\item \emph{The window bound gives bounds for high derivatives.} Denote the transform by $\Phi$, and set $A_k(z)=(-1)^k\Phi^{(k)}(z)/k!$. Its integral kernel is $u^ke^{-\sigma u}e^{-itu}/k!$. Take $U=\log Y$, $\sigma>2$, and $k\approx(1+\delta/2)\sigma U$, so that the peak of the kernel lies in the middle of the logarithmic window $[U,(1+\delta)U]$. Outside the window, only a crude growth bound is used. Inside the window, the identity $|g|+g=2\max(g,0)$ makes the one-sided bound sufficient to control $|A_k(\sigma+it)|+\Re A_k(\sigma)$, even when $g$ takes very large negative values. The result is
+\[
+|A_k(\sigma+it)|+\Re A_k(\sigma)\le C_1\,\frac{e^{\eta U}}{(\sigma-\theta)^k}\qquad(\text{for all real } t).
+\]
+\item \emph{Poles give a lower bound in the opposite direction.} Suppose there is a pole with $\Re\rho>\theta$. Using local finiteness of the poles, the archive separates two cases without assuming the existence of a zero with largest real part. In one case, one can choose $z=\sigma+it$ so that a small disk centered at $z$ contains exactly one pole $\rho$, while a sufficiently large disk around the real point $\sigma$ is pole-free. Subtracting the polar part and applying Cauchy's estimates gives a main term $c_\rho/(z-\rho)^{k+1}$ for $A_k(z)$, of order $|z-\rho|^{-k-1}$, while $A_k(\sigma)$ is much smaller. In the other case, the pole nearest to $\sigma$ is a real pole $\beta>\theta$. Taking $t=0$, the main term $c_\beta/(\sigma-\beta)^{k+1}$ of $A_k(\sigma)$ is positive and cannot be canceled by the absolute-value term. In both cases, this order of magnitude exceeds the upper bound in item 3, giving a contradiction for sufficiently large $U$.
+\end{enumerate}
+
+\paragraph{Relation to classical results.} Landau's 1905 theorem and the version in Widder's book require positivity \emph{everywhere} beyond some point\,\cite{landau,widder}; the classical theorem does not apply directly when positivity holds only on a sequence of intervals. The pointwise-bound version is closely related to Kaczorowski and Pintz's 1986 theorem on oscillation in ``every sufficiently large $[X^{1-\varepsilon},X]$''\,\cite{kp}. The archive actually proves a more general version, requiring only that the positive part of $G_m$ be controlled by a function in each window, and controlling only its weighted integral. This step uses no statements from the external literature. The required nonvanishing on $\Re s\ge1$ comes directly from Mathlib.
+
+\paragraph{The choice of $3/2$.} The window criterion holds for any fixed $\lambda=1+\delta>1$. The upstream arithmetic estimate gives control on $[W,W^2]$. To absorb a constant, the left endpoint is increased to $Z=kW$; since $(kW)^{3/2}\le W^2$ is equivalent to $k^3\le W$, the exponent $3/2$ is chosen. The same method works for any fixed $1<\lambda<2$.
+
+\arch{The criterion is \Lean{Deduction.zeroFree\_of\_rpow\_window} (\Lean{ZeroFreeOfRpowWindow.lean:11}); its hierarchical form is \Lean{UpperTheory.Comparison₂.formB} (\Lean{PrimitiveCosets/Imports.lean:8--19}); $G_z$ and $G_m$ are in \Lean{StatementOC.lean:11--13} and \Lean{ExplicitFormulaErrorOfHostConditions.lean:36--40}; poles and residues are in \Lean{Deduction.poleData} (\Lean{poleData.lean:248}, with the residue calculation on lines 336--383); the derivative estimate is \Lean{Deduction.landau\_window\_key} (\Lean{landauWindow.lean:40}); the contradiction is \Lean{Deduction.landau\_window} (\Lean{landauWindow.lean:83}); the source of $3/2$ is \Lean{UpperTheory.Top.winPairs} (\Lean{WinPairs.lean:16--59}). The everywhere-valid version is \Lean{Formalism.HC.Landau.zero\_free\_of\_Chebyshev\_growth} (\Lean{Landau.lean:538}); the final proof does not use it.}
+
+\section{Step 3. Prime sums and characters on the arithmetic side}\label{sec:s3}
+
+\paragraph{The finite-field prototype.} Alpöge describes the argument as a descendant of Stepanov's method\,\cite{alpoge}. To estimate the number $N$ of points on a curve over a finite field $\mathbf F_q$, Stepanov and Bombieri construct a nonzero rational function that vanishes to order at least $m$ at all but $m_0$ rational points and whose pole divisor has degree $D$. It follows that $m(N-m_0)\le D$\,\cite{stepanov,bombieri}. The Frobenius map imposes the multiplicities of the zeros without requiring knowledge of where the points are. Taking $m$ about $\sqrt q$ and $D/m=q+O(\sqrt q)$ gives $N\le q+O(\sqrt q)$. There is no differentiation over the integers. Alpöge says that the difficulty was to find a ``multiplicity'' playing the same role. Steps 3 through 5 explain how the archive does this. This section describes what is counted, namely primes; step 4 supplies the multiplicity through divisibility of periods; step 5 supplies the inequality ``multiplicity times number of points is at most degree.''
+
+\paragraph{The finite group and Frobenius classes.} The archive performs Fourier analysis on a finite abelian group $G=E_0\times A$. The group $G$ is isomorphic to the Galois group $\mathrm{Gal}(E/\Q)$ of an abelian field $E$ and is also a quotient of the unit group of a cyclotomic modulus. The two coordinates of $E_0=\Z/2\times\Z/2$ record the quadratic residue symbols for the two auxiliary primes $d$ and $q$. Every unramified prime $p$ has a Frobenius class $F_p$ in $G$, and its powers $p^i$ lie in $iF_p$. The archive specifies a subset $\Phi\subset G$ consisting of the elements whose first binary coordinate is zero, and counts only prime powers whose Frobenius classes lie outside $\Phi$. For such primes, $iF_p\notin\Phi$ holds exactly when $i$ is odd.
+
+\paragraph{The quantity to count.} At each large point $x$ in the window, the archive builds an $m$-layer chain (step 4). The chain has a common set of top positions $t\in TT$ (write $n_T=|TT|$), each carrying an integer weight $a_t$ satisfying $|a_t/b-x|\le1$. Layer $j$ also has a local weight $w_j(g)$ at position $g$. For a position $t$ and a layer $j$, the quantity to count is
+\[
+\mathrm{ASK}_{tj}=\sum_{p\ \text{of inert type}}2\log p\sum_{i\ \text{odd}}\Bigl[\frac{a_t}{p^i}-w_j\bigl(r_t(iF_p)\bigr)\Bigr]_+\ +\ \log d\sum_{i\ge1}\sum_{g\in iF_d+I_d,\ g\notin\Phi}\Bigl[\frac{a_t}{d^i}-w_j\bigl(r_t(g)\bigr)\Bigr]_+ ,
+\]
+where $[z]_+=\max(z,0)$, $r_t$ translates $g$ to position $t$, and $I_d$ is the inertia subgroup of the ramified prime $d$. The weight $[a/p^i-w]_+=w\cdot[y/p^i-1]_+$ ($y=a/w$) has the same shape as the weight $\Lambda(n)(y/n-1)$ used in $G_m$ in step 2. The quantity $\mathrm{ASK}$ is the sum over $t,j$.
+
+\paragraph{Parameters and orders of magnitude.} The following quantities recur in steps 3 through 5 and are collected here.
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Notation & Meaning and order of magnitude\\
+\midrule
+$x$, $\varepsilon$ & A large point in the window; a small positive number, $0<\varepsilon<1/52$\\
+$m$ & Chain length, the number of lift layers; the least even integer at least $x^{1/2-\varepsilon/16}$\\
+$b$ & Common weight, on an exponential scale: $L=x^\varepsilon$, $b=e^{L}$\\
+$a_t$ & Integer weight at top position $t$, $|a_t/b-x|\le1$, so $a_t\approx bx$\\
+$n$, $n_T$ & Total number of positions; number of top positions, $n_T\ge x^{-\varepsilon/8}n/2$\\
+$Q$ & Total weight $n_T\,m\,b$\\
+$k$ & Starting rank of the chain; the second term in step 5 requires $xm/k\le2$, so $k$ is at least about $x^{3/2}$\\
+$o$ & Size of the target family $\mathcal X$, the order of $\psi$\\
+$q$, $d$ & Auxiliary primes chosen once per window, providing quadratic twists (steps 3 and 6)\\
+$g_0$, $g_1$ & Two fixed auxiliary primes in step 4, unrelated to $q$, $d$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{An exact identity at each layer.} Orthogonality of characters of finite groups gives
+\[
+\mathrm{ASK}_{tj}-\mathrm{MAIN}_{tj}=\mathrm{De}_{tj},
+\]
+where the right-hand side sums over all characters $\psi$ of $G$. Each term is the prime sum associated with $\psi$, of the shape of $g_\psi$ in step 2, evaluated at $y=a_t/w_j(r_t(g))$, with weight $w_j(r_t(g))\overline{\psi(g)}/|\Phi|$. The trivial character supplies the main term $\mathrm{MAIN}_{tj}$, which contains $a\log a-a\log w-(1+\gamma)a$, together with constant terms from nontrivial characters left by orthogonality. Thus ``counting primes class by class'' and ``summing over characters'' give the same number, with the correct weights also assigned to ramified primes.
+
+\paragraph{Replacing local weights by the common weight and averaging over a subgroup.}
+\begin{enumerate}
+\item \emph{Changing weights.} At ``thick'' positions, the local weights at all layers are close to the same number $b$, so they are replaced by $b$. The ``thin'' positions contribute little and are discarded directly. The loss per vertex per layer is at most $2b/x$, giving a total of $2Q/x$, where $Q=n_T\,m\,b$.
+\item \emph{Averaging.} Average over all translations by a cyclic subgroup $A_0$. By orthogonality, only characters trivial on $A_0$ remain. Write $\delta$ for the proportion of thick positions.
+\item \emph{Comparing evaluation points.} Replace the value of each $g_\chi$ at $a(t)/b$ by its value at $x$. The rate of change of $g_\chi(y)$ with respect to $y$ is of order $\log y$, and $|a(t)/b-x|\le1$, so the error for each character is small. Even their sum is at most $x^{1/2+\varepsilon}$; the archive writes it as $4x^{1/2+\varepsilon}$. This step uses no square-root bound.
+\end{enumerate}
+The remaining characters are exactly the $o$ characters in the target family $\mathcal X$, together with three groups of ``companion characters'' obtained by multiplying them by the quadratic symbols of the auxiliary primes $q$ and $d$, giving $4o$ characters in all. The vertex proportions chosen in the archive make the target part \emph{exactly} equal to $G_m$ from step 2. Writing $G=G_m-\Sigma_A$, where $\Sigma_A$ is the sum of the absolute values of the companion part, gives the balance inequality
+\[
+Q\cdot\frac\delta2\cdot\bigl(G-4x^{1/2+\varepsilon}\bigr)\ \le\ E+\frac{2Q}{x},
+\]
+where $E$ must bound $\mathrm{ASK}-\mathrm{Main}$ for every translation simultaneously. Step 5 supplies $E$.
+
+\paragraph{Controlling companion characters.}
+\begin{itemize}
+\item \emph{Their form.} Each companion character can be written as $\xi(n)\bigl(\tfrac nq\bigr)^i\bigl(\tfrac nd\bigr)^j$, where $\xi$ is a power of the target character and $(i,j)\ne(0,0)$. Thus each carries a nontrivial quadratic twist supplied by the auxiliary primes.
+\item \emph{Choosing the auxiliary primes.} For every modulus $M$, every $0<\varepsilon<1/52$, and every $A\ge1$, the archive proves that, for all sufficiently large $Y$, there is a pair of primes $q,d$ such that all the characters with nontrivial twists simultaneously satisfy $|g_\chi(y)|\le y^{1/2+\varepsilon/2}$ and $|(L'/L)(1,\chi)|\le4\log y$ on the \emph{entire} interval $Y\le y\le Y^A$. For twists of real characters, zero-freeness in a specified rectangle is also required. Existence is proved by excluding bad candidates. The first ingredient is a mean-square estimate over candidate primes $q$. A twisted prime sum $S_q(y)$, truncated far out, has mean square over the candidate $q$ at most $C\,y\log y$, which shows that few $q$ exceed the bound anywhere in the interval. The second ingredient is a zero-density estimate. There are at most $C\,R^{1/4}$ primitive characters of conductor at most $R$ having a zero in $\Re s>1-1/400$, $|\Im s|\le R$. This excludes characters with zeros near $s=1$. For the remaining characters, the bound for $S_q$ and the zero-free rectangle give bounds for $g_\chi(y)$ and $(L'/L)(1,\chi)$. First $q$ is chosen, and then $d$ is chosen for that $q$, since the conditions on $d$ include $q\mid d+1$.
+\item \emph{There is no circularity.} The target family $\mathcal X$ is fixed first; $q,d$ vary with the window. The auxiliary-prime selection theorem and the zero-density estimate are both proved in the archive, and their import closures exclude the later files that use them.
+\end{itemize}
+Thus $\Sigma_A\le4o\,x^{1/2+\varepsilon}$, using the same bound for every term and at most $4o$ terms.
+
+\arch{The finite group and host data are \Lean{Formalism.HC.HostRaw} (\Lean{ConjEMemHostFIff.lean:12}), \Lean{UpperTheory.Comparison₂.toE\_bij} (\Lean{ToEBij.lean:37}), with $E_0$ in \Lean{PartnersToFactorsAt.lean:13--26}; the definitions of $\mathrm{ASK}$ are \Lean{characterSumData.askP}, \Lean{askD}, \Lean{ASK} (\Lean{FirstPrimeNeSecondPrime.lean:72--87}); the layer identity is \Lean{Deduction.ch\_balance} (\Lean{ChBalance.lean:200--260}), \Lean{Deduction.CharacterBalance.askExp} (\Lean{ChBalance.lean:122}); changing weights, averaging, and $2Q/x$ are in \Lean{Deduction.CharacterBalanceMoves.core}, \Lean{th\_le}, \Lean{sum\_A} (\Lean{ChCore.lean:28--337}); comparison of evaluation points is \Lean{Deduction.ch\_core} (\Lean{ChCore.lean:343--442}); identification of $G_m$ is \Lean{UpperTheory.Comparison₂.gmA\_eq} (\Lean{GmAEq.lean:61}). Companion characters are treated in \Lean{UpperTheory.Comparison₂.sigA\_le} (\Lean{SigALe.lean:38}), \Lean{card\_PsiA} (\Lean{CardPsiA.lean:60}), \Lean{UpperTheory.Top.boundedTw} (\Lean{BoundedTw.lean:5--57}), \Lean{UpperTheory.Top.PairGood} (\Lean{PairGood.lean:18--31}), \Lean{QH.pairEx} (\Lean{pairEx.lean:112}), \Lean{QH.meanSqK}, \Lean{QH.bad\_share}; zero density is \Lean{ZeroDensityBox} (\Lean{CountSt.lean:7}), proved by \Lean{ZD.zero\_density\_box} (\Lean{CountZAll.lean:13}).}
+
+\section{Step 4. The theta chain produces ``multiplicity''}\label{sec:s4}
+
+\paragraph{The setting.} A theta lift transfers an automorphic form from one group to another by integrating against a theta kernel that is automorphic under both groups. The archive uses positive definite unitary groups, and the theta kernel depends on auxiliary splitting characters. At the levels, weights, and algebraic models chosen in the archive, the relevant automorphic forms are described by their values on finitely many double cosets, representing lattice classes. For vectors in the specified lattices and character subspaces, the resulting periods have representatives in a number field $K$, so one can ask how many times a prime divides them. The chain is a sequence of lifts $U(X_0)\to U(X_1)\to\cdots\to U(X_m)$.
+
+\paragraph{Why a lift contributes additional factors of $p$.} This is the source of all the ``multiplicity.'' A lift extracts high-order derivatives, prescribed by the weight, from the expansion of the local theta kernel. The archive uses the polynomial $P$ associated with a highest-weight vector, formed by multiplying one column minor for each column of the weight diagram, as a differential operator. It applies this operator to the power series of the kernel and evaluates at the origin, giving $(P(\partial)f)(0)$.
+\begin{itemize}
+\item Differentiating one variable $n$ times introduces $n!$ into the coefficients, and the number of factors of $p$ in it can be computed exactly.
+\item The local theta kernel is written as $\exp(-\Phi)\cdot U$, where $\Phi$ is a biadditive form on a height-$2$ Lubin--Tate-type formal group with logarithm $\sum_j X^{p^{2j}}/p^j$. Expanding introduces two kinds of denominators, $1/k!$ from the exponential and $1/p^j$ from the logarithm.
+\item In each term, the number of factors of $p$ that the denominators can cancel is at most the number of columns at the corresponding position in the weight diagram. Subtracting these possible cancellations from the factors of $p$ contributed by the factorial gives a remaining lower bound denoted by $g_0$. Thus one can compute in advance how many factors of $p$ must remain, regardless of the specific coefficients of the kernel.
+\item A stronger estimate holds on the chosen inert Frobenius orbits. First apply to the input lattice a Hecke operator that sums over neighboring lattices. Commuting it with the lift operator produces an explicitly computable power $p^{\mathrm{Pr}}$, raising the gain that can be recorded to $g_U-\mathrm{Pr}$. This improvement is obtained by induction on the chain length.
+\end{itemize}
+The next lift is linear, so the factors extracted at the previous step pass through unchanged and are multiplied by the factors retained at the current step.
+
+\paragraph{Gains and losses at each layer.} Fix a column $u$ of the chain and a finite place $w$ of $K$ above a prime $p$. Layer $j$ contributes three quantities: a gain $\mathrm{gainD}_j(w)$, namely the $\max(g_U-\mathrm{Pr},g_0,0)$ or $\max(g_0,0)$ above, set to zero at excluded primes; a base term $F_j(w)$, determined by the weight and local type and possibly negative; and a loss $E_{u,j}(w)$, the $p$-adic valuation of the order of the relevant stabilizer, with an additional term depending on the prime type. The budget of the entire chain at $(u,w)$ is
+\[
+\mathrm{sg}(u,w)=\sum_{j=1}^{m}\bigl(\mathrm{gainD}_j(w)+F_j(w)-E_{u,j}(w)\bigr).
+\]
+The two fixed auxiliary primes $g_0,g_1$, the excluded primes, and the level primes $T_u$ of the column itself are treated separately.
+
+\paragraph{Divisibility.} The archive proves that for \emph{every} vector in the input lattice $\mathrm{NuLat}_u$ and every specified test vector, the period at the end of the chain has a representative $y$ in $K$ satisfying $y=0$ or $v_w(y)\ge\lfloor e_w\,\mathrm{sg}(u,w)\rfloor$, where $e_w$ is the ramification index. The lower bound holds on the entire lattice, which is the prerequisite for ``division'' in the next step.
+
+\paragraph{Division.} Write $s_w=\lfloor e_w\,\mathrm{sg}(u,w)\rfloor$. Since all periods on the lattice have divisibility at least $s_w$ at $w$, the input can be allowed an additional denominator of order $s_w$ at $w$. Replace the input lattice by
+\[
+N'_u=I_u\cdot\mathrm{NuLat}_u,\qquad I_u=\prod_{w}\mathfrak p_w^{-s_w},
+\]
+and the pairing values remain algebraic integers. The period map $B_u$ sends the new lattice into the dual $\mathrm{Hom}(RR,\mathcal O_K)$ of a global lattice $RR$. After this change of lattice, its average slope increases by \emph{exactly}
+\[
+\mu(N'_u)-\mu(\mathrm{NuLat}_u)=2\sum_{w}\frac{\log N\mathfrak p_w}{[K:\Q]}\,s_w .
+\]
+The slope $\mu$ in the archive is twice the usual Arakelov slope plus a constant, and heights also use squared norms, accounting for the factor $2$ in the formula. If $s_w<0$ at some place, that term is negative.
+
+\paragraph{Gluing integral structures across Hecke characters.} The global lattice $RR$ is not taken at a single character. At each prime place $w$, the archive chooses a finite-order Hecke character $\mu_w$, with only finitely many differing from a reference character. It takes the corresponding local lattice at each place and intersects over the prime places, giving $RR=\bigcap_w\bigl(\iota_{\mu_w}(\Lambda_{\mu_w})\bigr)_{\mathfrak p_w}$. It proves that $RR$ is still a lattice and that its localization at each $w$ is exactly the lattice chosen there. This corresponds to two entries in Alpöge's timeline. Entry 12 says that, by the seesaw principle, the period of the iterated lift is a Bessel period independent of the Hecke character. Entry 15 says ``glue integral structures across Hecke characters, take a gcd, that is, an extra averaging.''
+
+\paragraph{Size.} In addition to divisibility, the size of each lift must be controlled. The Rallis inner product formula controls the norm of the lift on the relevant isotypic component, the Chowla--Selberg formula normalizes CM periods, and the Siegel mass formula gives the volume ratio between adjacent ranks\,\cite{hks,cs}.
+
+\arch{For the local mechanism, the differential action is \Lean{Formalism.MainNotions.FormalGroupSystem.applyD} (\Lean{FormalGroupSystem.lean:256--259}), the product of column minors is \Lean{PIv} (the same file, 405--422), the theta kernel condition is \Lean{ExtensionLocalCondition} (162--170), the local formula for $g_0$ is \Lean{gA} (66--70), with proof \Lean{VolumeRatio₂} (658--659), Hecke commutation is \Lean{Conclusion4} (671--679), and induction on chain length is \Lean{main\_ind} (\Lean{YEPEComm.lean:131--186}); the source of the coefficient estimate is \Lean{Formalism.InvariantFactorPaths.G7.Top.entry\_a\_one} (\Lean{KOneConsequence.lean:43}). The global formulas are \Lean{Formalism.MainNotions.G.g0}, \Lean{gU}, \Lean{Pr}, \Lean{gainP} (\Lean{IsResidueClassZero.lean:247--401}). The local results are collected through \Lean{Formalism.MainNotions.Pk.sum\_over\_primes\_service} (\Lean{SumOverPrimesHypotheses.lean:187--222}), and \Lean{Formalism.L2.G.Adm2InU.admissible\_level\_two} (\Lean{AdmissibleAtGeneratorPlaces.lean:214--246}) then supplies the divisibility interface \Lean{LocalQuadraticParts.adm2}. The budget is \Lean{Formalism.BasicNotions.SizeData₂.sg} (\Lean{DataParams₂.lean:215}); division is \Lean{DV.Iu}, \Lean{DV.NprimeDef} (\Lean{DataDIVDefs.lean:17--24}); integrality of the pairing is \Lean{Formalism.DivisionValues.divisor\_into\_dual\_shift} (\Lean{TwistedLatticeNaturality.lean:720}); the slope equality is \Lean{Formalism.MainNotions.J.mu\_diff} (\Lean{SumLogPrimeFactorsLe.lean:380}); lattice gluing is \Lean{Formalism.L2.Indef.IndefData.RR} (\Lean{IndefSide.lean:281}), \Lean{IndefRows.RR\_spec} (\Lean{IndefUse.lean:219}).}
+
+\section{Step 5. Bounding the slope from both sides to control the prime sum}\label{sec:s5}
+
+This section gives the form of the Stepanov inequality in the archive. Divisibility of periods, the multiplicity, raises an average slope from below; the size of the period map at complex places, the degree, bounds it from above. Combining the two gives an upper bound for the prime sum.
+
+\paragraph{The prime sum and total gain.} Sum the gains at the prime places from step 4 with logarithmic weights:
+\[
+\mathrm{Ga}=\sum_w c_w\Bigl(\sum_{j=1}^{m}\mathrm{gainD}_j(w)-\tau_w\Bigr),\qquad c_w=\frac{2e_w\log N\mathfrak p_w}{[K:\Q]},
+\]
+which, after grouping by rational prime, becomes $2\sum_p\log p\,(\sum_j\mathrm{gain}(j,p)-\tau(p))$, of the same shape as $\mathrm{ASK}$ in step 3. The archive proves $\mathrm{ASK}-\mathrm{Ga}\le P$.
+\begin{itemize}
+\item For retained primes, the local gain covers that prime's contribution to $\mathrm{ASK}$, leaving only a few uncovered top positions.
+\item Excluded primes are charged entirely to the loss. These are primes that are too large, whose Frobenius component has too small an order, whose powers fall in a certain narrow band, or for which a certain sign sum is too large.
+\item These losses are controlled by weighted sums of the form $\sum\log p/p$, giving a total $P=c\,n_T\,m\,b$, which becomes just a constant after division by $Q=n_Tmb$.
+\end{itemize}
+Only a one-sided estimate is used here. The archive neither proves nor needs approximate equality of $\mathrm{ASK}$ and $\mathrm{Ga}$.
+
+\paragraph{Raising the slope from below by division.} For each word $u$ in the chain, write $M_u$ for the starting lattice and $N'_u$ for the lattice after division in step 4. Comparison at each prime place gives
+\[
+\mu(M_u)+\mathrm{Ga}+\mathrm{Fo}-\mathrm{Ee}(u)-\mathrm{Lo}_u\ \le\ \mu(N'_u),
+\]
+where $\mathrm{Fo}$ and $\mathrm{Ee}(u)$ are the totals of the base terms and losses with the same weights, and $\mathrm{Lo}_u$ is the loss from rounding and related operations.
+
+\paragraph{An upper bound from the height of the map and a family slope inequality.} The period map $B_u:N'_u\to RR^\vee$ is integral. Its height is defined as the logarithmic average of its squared operator norms at the infinite places, $h(B_u)=\frac1{\#\{v\mid\infty\}}\sum_{v\mid\infty}\log\|B_u\|_v^2\le h_u$. The archive obtains $h_u$ by estimating the norms of the kernel operators at each layer and each infinite place. The height budget is
+\[
+\mu(RR^\vee)+h_u-\mathrm{Fo}\ \le\ \mathrm{MAIN}(u)+E_{\mathrm{div}} .
+\]
+A Harder--Narasimhan-type family slope inequality is then applied to the entire word family $\mathcal W$. Writing $s$ for the rank-weighted average of $\mu(N'_u)-h_u$, we have
+\[
+s\ \le\ \mu(RR^\vee)+\log|\mathcal W|+\Phi_{\mathrm{frame}},
+\]
+where $\Phi_{\mathrm{frame}}$ is a correction term controlled by slope fluctuations. Bost's slope inequality for a single word, stating that a nonzero integral map $f:A\to B$ satisfies $\mu_{\min}(A)\le\mu_{\max}(B)+h(f)$, is a special case.
+
+\paragraph{Combining the two bounds.} Combining the lower bound with the height budget and comparing with the family inequality gives
+\[
+\mathrm{Ga}+\mu(RR^\vee)-K_5-\overline{\mathrm{Lo}}\ \le\ s\ \le\ \mu(RR^\vee)+\log|\mathcal W|+\Phi_{\mathrm{frame}},
+\]
+and $\mu(RR^\vee)$ cancels from the two ends, with $K_5=\mathrm{Main}(u_0)+K_0$. Using $\mathrm{ASK}\le\mathrm{Ga}+P$ then gives the bound needed in step 3:
+\[
+\mathrm{ASK}(u_0)-\mathrm{Main}(u_0)\ \le\ \mathrm{ErrX5at}(u_0).
+\]
+This corresponds to Stepanov's ``multiplicity times number of points is at most degree.'' The valuations at each prime place and each layer are additive multiplicities; the average slope records their logarithmic weights; and the height at infinite places and the family slope bound supply the degree budget. The upper bound applies to the average over the entire word family, so individual periods can vanish, and the conclusion cannot be simplified to ``one period has many prime factors.''
+
+\paragraph{Exact cancellation of the main terms.} Subtracting the large terms on the geometric side leaves exactly
+\[
+\mathrm{Main}(u_0)=\sum_{j,t}a_t\Bigl(\log a_t-1-\gamma+\Re\frac{L'}{L}(1,\chi_K)-\frac1{|\Phi|}\sum_{\rho\in\Phi}\log w_j(\rho)\Bigr),
+\]
+where $\chi_K$ is the quadratic character modulo $d$. The logarithmic terms from the auxiliary primes $g_0g_1$ cancel the corresponding terms in the loss, and constants of the form $\log(\pi/v)$ cancel as well. This is an algebraic identity. The main term subtracted by character orthogonality on the arithmetic side in step 3 is exactly the same number. Thus no error estimate is needed for the large main terms on either side, and the $\mathrm{ASK}-\mathrm{Main}$ supplied by the geometric side can be inserted directly into the Fourier formula in step 3.
+
+\paragraph{The error and the chain length.} $\mathrm{ErrX5at}$ has eight lines: the remainder in the lower bound for the number of auxiliary primes along the chain, coming from the mass formula and volume ratios; the height budget for division; the layer-by-layer denominator comparison remainder $m\,c_EB_0$; the lower bound for the slope of the starting lattice; $\log|\mathcal W|$; the local loss $P$; the loss from the quotient-lattice slope; and the correction in the family slope inequality. After combining them, a common factor $x^{C\varepsilon}$ is extracted, where $C=e_D+e_L+3$ and $e_D$, $e_L$ are exponent parameters for the division and loss terms. The remainder splits into four terms. Write $Y=x^{1/2+13\varepsilon/8}$. After division by $Q$, the four terms are at most $2Y$, $2Y$, $4Y$, and $2Y$, respectively, so $E/Q\le10\,x^{C\varepsilon}Y$. The first term divided by $Q$ is in fact at most $2x/m$. It is ``degree divided by multiplicity,'' improves as the chain grows, and requires $m\ge x^{1/2-\varepsilon}$. The second term divided by $Q$ is about $xm/k$, which is at most $2$ when the starting rank is large enough. The third term has the form $m\cdot 2nmb\,x^{\varepsilon}$ and, after division by $Q$, is approximately proportional to $m$, requiring $m\le x^{1/2+\varepsilon/2}$. The fourth term is controlled by set sizes. The specific chain length is chosen when constructing the witness for \textsf{HypsAlt}, as the least even integer at least $x^{1/2-\varepsilon/16}$. Alpöge writes that a chain of length about $\sqrt X$ was Claude's suggestion\,\cite{alpoge}. Exact subtraction of the main term provides the centering, and $m\approx\sqrt x$ controls the size of the centered error.
+
+\paragraph{Completion.} Combining the balance inequality, the bound for $E/Q$, $\delta\ge x^{-\varepsilon}$, and $\Sigma_A\le4o\,x^{1/2+\varepsilon}$ gives $G_m(x)\le x^{1/2+(e_D+e_L+7)\varepsilon}$. The construction used in the archive takes $e_D=2$ and $e_L=0$, so $G_m(x)\le x^{1/2+9\varepsilon}$ on the window. If there were a zero with $\Re\rho>1/2$, choosing $\varepsilon$ sufficiently small would give a contradiction by the criterion in step 2.
+
+\arch{Total gain and losses are \Lean{Formalism.BasicNotions.SizeData₂.Ga}, \Lean{Fo}, \Lean{Ee} (\Lean{DataParams₂.lean:203--223}); $\mathrm{ASK}-\mathrm{Ga}\le P$ is \Lean{Formalism.LFunctionChainParameters.WeightedSlopeBounds.LossBounds} (\Lean{QuotientSlopeBoundsWith.lean:34--35}), proved by \Lean{Loss7.losses\_of\_small\_share\_weight} (\Lean{LossRequirementsOfSmallShares.lean:86--160}); the slope lower bound is \Lean{Formalism.MainNotions.Lnk.slopesN\_at\_of} (\Lean{TopDensityNGeSixteen.lean:1529}); division, integrality, height, and slope increase are \Lean{Formalism.L2.DIV.divClausesR\_of} (\Lean{ConstantGeTwentyEight.lean:184--247}); the height budget is \Lean{Formalism.MainNotions.LinkDIV\_at} (\Lean{GlobalTheoremInputs.lean:77--90}); the family slope inequality is \Lean{Formalism.HN.theoremFSharp\_of} (\Lean{TheoremFSharp.lean:324--386}), and Bost's inequality is \Lean{Formalism.HN.slope\_inequality\_mean} (\Lean{SlopeIneqMean.lean:249}); combining the bounds is \Lean{WeightedSlopeBounds.Ga\_bound5}, \Lean{s\_lower5}, \Lean{key\_identity5} (\Lean{LevelOfCongruence.lean:17--160}), \Lean{each\_unit\_bound\_statement} (the same file, 175--197); these data are assembled by \Lean{Formalism.MainNotions.Lnk.linkCore} (\Lean{LossesSmallShares.lean:38--297}); the arithmetic main term is \Lean{Deduction.ch\_top\_main\_eq} (\Lean{ChTop.lean:11--35}), and the pointwise difference is \Lean{Deduction.ch\_top} (\Lean{ChTop.lean:37--72}); the eight lines are \Lean{ErrX5at} (\Lean{QuotientSlopeBoundsWith.lean:45--55}), combined in \Lean{LErr.core\_ineq} (\Lean{SubThreeMulLogTwoLe.lean:13--208}); the four terms are \Lean{ThickSetMeanBounds.proposition\_size\_bound} (\Lean{LipschitzWeightAndMinimum.lean:507--552}); the upper and lower bounds for chain length are \Lean{LChain.RestSize} (\Lean{SChain.lean:53}), and its specific choice is \Lean{GlobalTheory.Mem.Num.mAt} (\Lean{EvenCeil.lean:21}, part of the construction of the inputs); the convergence point is \Lean{UpperTheory.Comparison₂.core\_gm} (\Lean{CoreGm.lean:12--74}); $e_D=2$ appears in \Lean{UpperTheory.Top.shape\_closed\_link\_n\_of\_green} (\Lean{TopShape.lean:52}).}
+
+\section{Step 6. Bounding the extra divisibility}\label{sec:s6}
+
+\paragraph{Why it is needed.} Step 4 exchanges divisibility of periods for slope. But divisibility of special values can also come from arithmetic objects unrelated to the chain, and these can cancel the orders of divisibility accumulated in step 4 within each layer's budget. Entries 14 and 17 of Alpöge's timeline say that twisting removes some of this divisibility, while what cannot be removed lies in classes of $H^1(\mathcal O_E[1/\ell],\Q_\ell/\Z_\ell(-e))$ and requires a weakening of Vandiver's conjecture. A classical example is the Herbrand--Ribet theorem. For an odd prime $p$ and even $2\le k\le p-3$, $p$ divides the numerator of the Bernoulli number $B_k$ if and only if the component of the $p$-class group of $\Q(\zeta_p)$ under the Teichmüller character $\omega^{1-k}$ is nonzero\,\cite{herbrand,ribet}. In the archive, divisibility from such unidentified sources enters each layer's budget as a weighted sum of lengths of Tate--Shafarevich-type groups and must be bounded above.
+
+\paragraph{The fields and groups.} Up to isomorphism, the relevant fields are $E=K_\psi\cdot\Q(\zeta_{2^{a+2}})^+\cdot\Q(\sqrt{-q})\cdot\Q(\sqrt{-d})$, where $K_\psi$ is the fixed field of $\ker\psi$, and $q,d$ are auxiliary primes satisfying a set of congruence and size conditions ($q\equiv3\bmod8$, $d\equiv7\bmod16$, $q\mid d+1$, and all odd primes below a certain bound divide $d+1$). For a prime $\ell$ and $k\ge1$, set
+\[
+\Sha_{\ell,k}(E)=\ker\Bigl(H^1\bigl(G_{E,S_\ell},\Q_\ell/\Z_\ell(-k)\bigr)\to\prod_{v\mid\ell}H^1\bigl(G_{E_v},\Q_\ell/\Z_\ell(-k)\bigr)\Bigr),
+\]
+the global classes invisible locally at all places above $\ell$. \textsf{VWin} asserts that for every primitive $\psi$, every $0<\varepsilon<1/52$, and a specified family of ``page functions'' $a(x)$, there is a sequence of intervals $[Y,Y^2]$ such that every $x$ in them and every corresponding field $E$ satisfy
+\[
+\sum_{\ell\in S}\log\ell\sum_{1\le k<\lfloor x^{401}\rfloor}\operatorname{length}\Sha_{\ell,k}(E)\ \le\ \exp(x^{\varepsilon}/2)\qquad\text{for every finite set of primes } S .
+\]
+
+\paragraph{The proof adds three parts.} The total length splits into three parts: the contribution of the prime $2$, and two components at odd primes separated by the complex-conjugation eigenvalues $(-1)^{k+1}$ and $(-1)^k$.
+\begin{itemize}
+\item \emph{The prime $2$.} Decomposition under complex conjugation requires division by $2$ and cannot be used here. The archive places the field in a cyclotomic tower and estimates the whole group directly, using counts of field extensions of exponent at most $2$.
+\item \emph{The component with eigenvalue $(-1)^{k+1}$.} Stickelberger elements and generalized Bernoulli numbers control this component. It is the half accessible to classical cyclotomic theory.
+\item \emph{The component with eigenvalue $(-1)^k$.} It corresponds to the half that Vandiver's conjecture concerns. It has no available analytic formula like that involving Bernoulli numbers and is the difficult part. The archive counts in five classes, I through V, with a combining lemma receiving four of them at a time. Each class estimates lengths of first Galois cohomology groups with local conditions. Class I controls a weighted total over primes and characters at once, using the vanishing of two two-dimensional Bloch--Kato Selmer groups derived from Kato's Euler system, with Kato's part proved in the archive, together with adjoint lifting. Classes II and III estimate terms individually using rigidity of deformations at automorphic four-dimensional symplectic Galois representations, together with density of the image. Class V uses a three-dimensional $R=T$-type theorem over $\Q(i)$, stating that the weight part of the universal deformation is finite and that the relevant points are all automorphic. Class IV uses bounds at finite levels of the cyclotomic tower and a transfer argument. The deformation conclusion shared by several classes states that, at automorphic points of dimensions $2$ through $4$, all adjoint cocycles satisfying the Bloch--Kato condition are coboundaries, so first-order deformations have only trivial directions.
+\end{itemize}
+
+\paragraph{Inside the difficult component.} The Kato part has a concrete construction in the archive. Kato's $c$-theta function is used to write down two Siegel units on modular curves explicitly. They give Kummer classes that are norm-compatible along the cyclotomic tower, producing a family of cohomology classes of Euler-system form. One of these classes is nonzero at a specified prime place; combined with Poitou--Tate and local Tate duality, this proves the vanishing of two two-dimensional Bloch--Kato Selmer groups. Vanishing of the adjoint Selmer group follows the Taylor--Wiles route. Chebotarev's theorem selects auxiliary prime places, ordinary cocycles are converted into derivations of a universal determinant ring at an automorphic point, and a Hida--Hecke ideal is then used to prove that these derivations vanish. These results are proved in the archive only in the special cases the argument needs.
+
+\paragraph{Choosing windows.} The cyclotomic tower is also used to select intervals. The Ferrero--Washington theorem appears here in the form that ``the sizes of class groups modulo $\ell$ are uniformly bounded along the cyclotomic tower''\,\cite{fw}. Consequently, below a very high twist bound, only a few twist degrees lie especially close to an $\ell$-adic ``center''; these are the exceptions. The scale is adjusted so that all exceptions fall in a smaller twist range, where independent cohomological estimates handle them.
+
+\paragraph{The origin of the exponents.} These large exponents arise by multiplying several crude estimates, each with room to spare.
+\begin{itemize}
+\item $377=28\cdot12+41$ is an upstream parameter. The quantity $T_O=\lceil x^{377}\rceil$ must dominate a product that reaches only $x^{376}$.
+\item The rank estimate takes $y=x^{1/100}$, with $n_W\le5288\,y^{2267}$ and $T_O\le2\,y^{37700}$, giving the product $10576\,y^{39967}$. Including the other terms, the entire rank is at most $10708\,y^{39967}\le y^{40000}=x^{400}$.
+\item Finally, the scale is changed by $x=\lambda x'$ to adjust constants. Taking $x'\ge\lambda^{400}$ gives $x^{400}\le x'^{401}$. Thus $401$ records how high a twist range the window must cover; it is not a critical exponent of a particular $\Sha$ group.
+\end{itemize}
+In step 4, this bound enters in the form $\sqrt b$, where $b$ is on an exponential scale, and is absorbed using $\sqrt b\le b$.
+
+\paragraph{Relation to Vandiver's conjecture.} Vandiver's conjecture states that for every prime $p$, $p\nmid h\bigl(\Q(\zeta_p)^+\bigr)$. Kurihara related it to the $K$-groups of the integers\,\cite{kurihara}, and in a modern formulation it is equivalent to ``$K_{4n}(\Z)=0$ for all $n$''\,\cite{weibel}. Alpöge calls \textsf{VWin} ``a significant weakening of Vandiver'' and says that he believes it can imply the vanishing of certain $K$-groups of the integers\,\cite{alpoge}. The archive establishes no formal implication between \textsf{VWin} and Vandiver's conjecture. \textsf{VWin} controls a total that grows with $x$, and this inequality alone does not imply the vanishing of any fixed class-group component.
+
+\arch{\Lean{UpperTheory.Top.VWin}, \Lean{VWinAt}, \Lean{VVle}, \Lean{IsChiField}, \Lean{WinPair} (\Lean{ExistsPageN.lean:12--50}); $\Sha$ and length are \Lean{Formalism.GaloisCohomology.Sha}, \Lean{shaLen} (\Lean{GaloisCohomology/Statement.lean:54--78}); addition of the three parts is \Lean{UpperTheory.V.vvle\_of\_parts} (\Lean{LengthEqAddEigen.lean:127}), with the two components \Lean{ShaPlus}, \Lean{ShaMinus} (\Lean{LengthEqAddEigen.lean:68--76}); the four classes of counts are \Lean{UpperTheory.V.HV.CountI}--\Lean{CountV} (\Lean{HeightAndVanishing/Counts.lean:53--69}), \Lean{countIV} (\Lean{CountIV.lean:39--89}), converging at \Lean{UpperTheory.V.HV.Core.of\_four\_alt} (\Lean{HVCore.lean:18--22}); the statement for class IV is in \Lean{LayerLe.lean:21--25}; the Kato input is \Lean{KatoTwoW} (\Lean{KatoTwoW.lean:10--14}), proved by \Lean{katoTwoW\_of\_printsH} (\Lean{KatoTwoWOfPublishedH.lean:48}); rigidity at four-dimensional symplectic points is \Lean{UpperTheory.V.Th.rigSp4\_alt} (\Lean{RigSp4.lean:181--194}); the three-dimensional $R=T$-type theorem is \Lean{UpperTheory.V.Aut.ThmS6Core\_s} (\Lean{ThmS6CoreS.lean:27--36}); adjoint cocycles being coboundaries is \Lean{AdZero} (\Lean{OrdZero.lean:68--73}); the classes converge at \Lean{vwin\_of\_hypotheses\_H\_E\_alt} (\Lean{WindowBoundOfLiteratureLevel.lean:25--29}); Ferrero--Washington is \Lean{UpperTheory.V.FW.ferreroWashington} (\Lean{FerreroWashington.lean:7--11}); the exponents are in \Lean{Formalism.MainNotions.PageFix} (\Lean{PageFix.lean:9--18}), \Lean{UpperTheory.Top.eventually\_rank\_le\_rpow\_of\_lt\_one\_div\_fiftytwo} (\Lean{EventuallyRankLeRpowOfLtOneDivFiftytwo.lean:34--126}), \Lean{UpperTheory.Top.winPairs} (\Lean{WinPairs.lean:74--81}). The proof entry point for \textsf{VWin} is \Lean{UpperTheory.One.vwin\_of\_row} (\Lean{VwinOfRow.lean:4}).}
+
+\section{Where the three inputs come from}\label{sec:inputs}
+
+In the main chain of the final proof, \Lean{allChi} comes from \Lean{everyCharacter}. The latter substitutes a theorem asserting the existence and local compatibility of Galois representations of polarized cuspidal representations, passes through a theorem collecting statements from the literature, and hands it to \Lean{every\_character\_of\_green\_v\_win}, which accepts the three inputs. We discuss the inputs separately below.
+
+\paragraph{\textsf{Green} and finite-group characters.} \textsf{Green} is part of J.~A.~Green's 1955 character theory of finite general linear groups\,\cite{green}. The archive states that, for a prime $p$ and $d>0$, the cuspidal irreducible complex characters of $GL_d(\mathbf F_p)$ are in bijection with the monic irreducible polynomials of degree $d$ over $\mathbf F_p$ with nonzero constant term. The degree of each character is $\prod_{i=1}^{d-1}(p^i-1)$, and there is an explicit formula for its values on elements with irreducible characteristic polynomial. This formula depends on fixed labeling data, consisting of a generator of the multiplicative group of a finite field and a Teichmüller-type embedding. The archive proves this itself. It first constructs cuspidal characters from Frobenius orbits of regular characters of the multiplicative group of a finite field, computes their values using power sums of roots and Möbius inversion on invariant subspaces, and uses counting to rule out omissions. It then changes the labels from characters to irreducible polynomials. In the main chain, \textsf{Green} verifies that the label weights satisfy admissibility conditions.
+
+\paragraph{\textsf{VWin}, from Galois representations to cohomological windows.} The proof of \textsf{VWin} starts with the $\ell$-adic Galois representations of polarized cuspidal representations. Base change for unitary groups converts unitary-group representations into data on the various $GL_{n_i}$. Four groups of inputs are then collected: local representation theory; automorphic representations and base change; Galois cohomology, including Poitou--Tate duality, local Tate duality, the Euler characteristic formula, the Greenberg--Wiles formula, and Bloch--Kato local conditions; and CM abelian varieties, including the main theorem of complex multiplication, Serre--Tate theory, Grothendieck deformation theory, and the Hecke--Tate functional equation. The contributions are then counted in parts and added as in Section~\ref{sec:s6}.
+
+\paragraph{\textsf{HypsAlt}, a compatible set of data.} \textsf{HypsAlt} is a structure with 46 fields. It requires the existence of \emph{one and the same} family class $\mathcal A$, a common set of choices $\sigma$, and a threshold function such that the conditions on column chains on the positive definite side, rows on the indefinite side, periods and twisted periods, counts, lattices, mass formulas, and the other data all hold simultaneously. The archive first uses theta correspondence, including Howe duality, the Siegel--Weil formula, the Rallis inner product formula, and doubling integrals, to provide finite sets of linear functionals with zero common kernel and values in number fields on specified test vectors. It uses arithmetic geometry, including resolution of singularities in characteristic zero, toroidal compactifications of Siegel moduli spaces, the arithmetic Hilbert--Samuel theorem, and heights, to bound the covolumes of the relevant lattices. Local Langlands and $p$-adic Hodge theory provide local parameters and error estimates. Finally, a common threshold is taken, a single set of objects satisfying all conditions is chosen, and the fields are filled one by one.
+
+\paragraph{The form of literature statements in the archive.} The archive collects statements from the external literature in a structure \Lean{OpenLiteratureStatements} with exactly three fields, two concerning Galois representations of polarized cuspidal representations and one concerning the existence of the local Langlands correspondence. About 185 literature entry points in the archive, with names such as \Lean{\_of\_literature}, take this structure as a parameter. Some follow from the three fields; others do not use these fields and directly invoke the archive's own proofs, as with Green's classification. The three fields are filled by theorems within the archive in \Lean{MainConclusion.lean:7--11}. The forms supplied are sufficient for the argument and weaker than the full theorems in the literature.
+\begin{itemize}
+\item \emph{Galois representations.} For regular algebraic polarized cuspidal representations over CM fields, the archive constructs continuous semisimple $\ell$-adic Galois representations. In odd rank, it starts from the étale cohomology of fiber powers of a family of abelian schemes. Cohomology is defined using Mathlib's étale site and injective resolutions, the Galois group acts on it, and simultaneous eigenspaces for Hecke correspondences give the required representations. Congruence approximations to Frobenius traces and limits of pseudocharacters then handle general weights. In even rank, two theta lifts send the representation to the same odd rank. The extra one-dimensional constituents introduced by the two lifts are distinct, and removing them gives the common part. This construction has concrete content in the archive. Representability of the moduli space is proved for arbitrary test schemes; existence of the Hecke correspondence operators is proved individually; annihilation of Frobenius by the Satake polynomial comes from a Hecke--Frobenius relation of Eichler--Shimura type on the special fiber; the foundations of étale cohomology start from five basic facts, namely vanishing on affine curves, a form of base change, $\mathbf A^1$-homotopy invariance, a computation for Laurent polynomial rings, and the projective bundle formula, from which Poincaré duality and the Lefschetz formula are deduced; in even rank, the Brauer--Nesbitt theorem removes the auxiliary one-dimensional constituents one by one. The archive proves the formula for Hodge--Tate weights and \emph{partial} local-global compatibility. At prime places not dividing $\ell$, only equality of dimensions is guaranteed in general. When the Weil action factors through abelianization and the monodromy operator is zero, the local parameters agree. When the local field is $\Q_p$, the parameter is tame, and the monodromy operator is zero, the characteristic polynomials of inertia elements agree. There are additional crystalline and potentially semistable conditions above $\ell$. Full local-global compatibility from the literature, due to Shin, Chenevier--Harris, and Caraiani, is stated in the archive but is not used in the final proof\,\cite{shin,ch,caraiani}.
+\item \emph{Local Langlands.} The archive constructs and proves a weakened correspondence for every $p$-adic local field. On a class of ``good'' representations, it is uniquely determined and satisfies standard properties concerning twists, central characters, duality, injectivity, depth, and so on. ``Good'' means that every constituent of the supercuspidal support is either a one-dimensional character or, when the local field is exactly $\Q_p$, a twist of a depth-zero supercuspidal representation. On these representations, it is local class field theory in dimension one and is compatible with the types supplied by Deligne--Lusztig theory in depth zero. For the remaining supercuspidal representations, it takes a placeholder parameter preserving only dimension and the absolute value of the central character. Whenever the local field differs from $\Q_p$ itself, all supercuspidal representations of dimension at least $2$ fall into this class. The full local Langlands correspondence of Harris--Taylor, Henniart, and Scholze is also stated in the archive but is not used in the final proof\,\cite{ht,henniart,scholze}.
+\end{itemize}
+The final statements use Mathlib's definitions of $\zeta$, $L(s,\chi)$, and the Riemann hypothesis. The forms of the intermediate concepts do not change their meaning.
+
+\arch{The three fields are \Lean{UpperTheory.LiteratureTheorems.OpenLiteratureStatements} (\Lean{EveryCharacterOfLiteratureOfVWin.lean:215--218}), filled in \Lean{MainConclusion.lean:8} by \Lean{⟨h, recTExists, h⟩}. For Galois representations, the statement is \Lean{UpperTheory.One.M.Row}, expanded as \Lean{UpperTheory.GalStar.Row0b}, \Lean{PropsB}, \Lean{AwayB}, \Lean{AboveB} (\Lean{WeightsConjBis.lean:26--73}); the proof is \Lean{UpperTheory.Gal.Int.galoisLocalGlobalStrong\_recParameter} (\Lean{RowSrc.lean:6}), first proving the stronger \Lean{Row0} and then weakening it; the cohomological representation is \Lean{UpperTheory.Gal.Int.Geo.repEx\_of} (\Lean{RepAsm.lean:13--60}), passage to the limit is \Lean{GlobalTheory.Cong.exists\_limit\_rep} (\Lean{ExistsLimitRep.lean:14--29}), and even rank is handled by \Lean{UpperTheory.Gal.TP.twoUpOK\_of\_steps} (\Lean{TwoUpOKOfSteps.lean:13--32}) and the theta lift \Lean{UpperTheory.TP.K.tLiftK}. For local Langlands, the statements are \Lean{UpperTheory.Zero.LLC.IsRecT}, \Lean{LawsT}, \Lean{Good} (\Lean{IsRecTOfIsRec.lean:20--85}), the proof is \Lean{UpperTheory.Zero.LLC.recTExists} (\Lean{RecTExists.lean:20--66}), placeholder parameters occur in \Lean{cuspEx} (\Lean{CuspEx.lean:168--266}), and uniqueness is \Lean{recTUnique} (\Lean{RecTUnique.lean:28--54}). The full versions are stated in \Lean{GlobalTheory.Published.PolarizedGaloisRepPublished}, \Lean{CaraianiLocalGlobalDual}, \Lean{GlobalTheory.LocLanglands.Laws} (\Lean{LocalLanglandsGL.lean:29--73}).}
+
+\arch{The main chain is \Lean{allChi} (\Lean{Supplements/Kernels/MainTheorems.lean:7}), \Lean{UpperTheory.Top.every\_character\_of\_green\_v\_win} (\Lean{TopPlug.lean:16--18}), \Lean{UpperTheory.FinalTheorems.everyCharacter}, \Lean{everyCharacter\_of\_row} (\Lean{MainConclusion.lean:7--11}), \Lean{UpperTheory.LiteratureTheorems.every\_character\_of\_literature\_of\_vWin} (\Lean{EveryCharacterOfLiteratureOfVWin.lean:810}), \Lean{UpperTheory.Lit.every\_character\_of\_theta\_integrals\_local\_matching} (\Lean{SiegelEisensteinSecondTermHypotheses.lean:69--73}). \textsf{Green} is defined in \Lean{GlobalTheory.GLq.Green} (\Lean{LabelDatum.lean:108}) and proved by \Lean{GlobalTheory.greenRegularCharacters\_holds} (\Lean{GreenCuspidalCharsByRegularCharsProof.lean:137}) and \Lean{GlobalTheory.GreenBridge.green\_of\_regular} (\Lean{SumRangeEqRoots.lean:225}). \textsf{VWin} is \Lean{UpperTheory.One.vwin\_of\_row} (\Lean{VwinOfRow.lean:4}), \Lean{UpperTheory.One.Join.automorphic\_window\_of\_inputs} (\Lean{TopMainZj.lean:71}). \textsf{HypsAlt} is the structure \Lean{GlobalTheory.Fc.HypsAlt} (\Lean{ThirdPlaceSeries/Hyps.lean:22--90}), with witnesses \Lean{UpperTheory.Lit.nonempty\_hyps\_definite\_side\_of\_closed\_bound} (\Lean{SiegelEisensteinSecondTermHypotheses.lean:44--68}), \Lean{GlobalTheory.Fc.nonempty\_hyps\_of\_allRows\_alt} (\Lean{NonemptyHypsOfAllRows.lean:19--101}).}
+
+\section{The archive itself}\label{sec:archive}
+
+\paragraph{Scale.} The archive contains 175{,}187 files and 17{,}374{,}270 lines, without a single comment. The import closure of the part deriving the Riemann hypothesis from the three inputs contains 17{,}279 files and about 3 million lines. Tracing proof terms from the final theorem shows that this part actually uses 96{,}541 declarations from the archive, spread across 5{,}683 files. Counting the source lines occupied by these declarations gives about 680{,}000 lines, or 23\% of the 3 million lines in this part.%%SLIM%%
+
+\paragraph{Several versions of the same conclusion.} The archive often contains several versions of the same conclusion, only one of which lies on the path to the final proof. For example, for the divisibility lower bound in step 4, the final proof uses \Lean{Adm2InU.admissible\_level\_two}; there is also \Lean{l2\_bound\_of\_inputs}, with the same conclusion and different assumptions. For the error through which step 4 enters step 3, the final proof follows \Lean{Lnk.linkCore}; there is also \Lean{linkGLOBAL\_of}. At the top level, there are two interfaces, accepting \Lean{Hyps} and \Lean{HypsAlt} respectively; \Lean{Main.lean} uses the latter.
+
+\paragraph{Unused branches.} There are also entire unused branches. Near step 4, an interface \Lean{ThetaChainStatement} describes cuspidal descent along the theta chain and identification of its endpoint. Both lines that use it eventually lead to declarations with no users, such as \Lean{chainD}. This branch has a complete proof of its own and invokes the division theorem, but the final proof does not follow it. The archive also retains a ``layer-by-layer cost'' calculation, multiplying the ranks of adjacent layers and then summing along the chain, and a statement explicitly saying that ``a certain expenditure exceeds the original budget.'' These are the closest matches to the difficulty described in entry 14 of Alpöge's timeline.
+
+\paragraph{Axioms.} The source contains no \Lean{axiom}, \Lean{sorry}, or \Lean{opaque}. The final theorem depends only on Lean's three standard axioms, as confirmed by Sutherland's checks. Section~\ref{sec:inputs} describes the form of external literature statements in the archive.
+
+\section{What remains unclear}\label{sec:open}
+
+The following questions concern the reasons for the design and do not affect correctness.
+\begin{itemize}
+\item \emph{The old $2/3$ route.} The timeline says that the a priori cost of each lift only reaches $2/3$. The archive retains layer-by-layer cost calculations and a statement that ``expenditure exceeds budget,'' but it does not connect them to the step yielding $2/3$.
+\item \emph{Conditions on the local theta kernel.} The local mechanism in step 4 requires the theta kernel to satisfy conditions of the form $\exp(-\Phi)\cdot U$, including Dwork-type lemmas. The proofs that the actual theta kernels satisfy these conditions belong to the input side; we have not read them individually.
+\item \emph{The window criterion in the literature.} We have not found whether the literature already contains the same statement as the ``integral upper bound'' version proved in the archive.
+\item \emph{Deeper into the difficult component.} We traced the counting classes in step 6 down to Kato's Euler system, Taylor--Wiles auxiliary prime places, and Hida ideals. We have not read through every layer of the complete proofs of the three-dimensional $R=T$-type theorem and rigidity at four-dimensional symplectic points.
+\item \emph{Optimality of the constants.} Constants such as $377$ and $401$ have room to spare throughout. Determining how far the whole construction can lower them requires simultaneous adjustment of upstream and downstream parameters.
+\item \emph{The foundations of the three inputs.} For foundational results such as existence of moduli spaces, the crystalline comparison theorem, and the Lefschetz formula, we checked only their statements and invocation sites, without reviewing each proof. Their correctness is guaranteed by Lean checking; the purpose of reading them is to understand which forms the archive uses.
+\end{itemize}
+
+\input{appendix_decls_en}
+
+\begin{thebibliography}{99}\small
+\bibitem{sutherland} A.~V.~Sutherland, \emph{Verification files for the Lean proof of the Riemann Hypothesis}, \url{https://math.mit.edu/~drew/grh/}.
+\bibitem{alpoge} L.~Alpöge, remark on the proof, \url{https://alpo.ge/remark.pdf}, 20 November 2026.
+\bibitem{stepanov} S.~A.~Stepanov, On the number of points of a hyperelliptic curve over a finite prime field, \emph{Izv. Akad. Nauk SSSR Ser. Mat.} 33 (1969), 1171--1181.
+\bibitem{bombieri} E.~Bombieri, Counting points on curves over finite fields (d'après S.~A.~Stepanov), \emph{Séminaire Bourbaki} 430 (1973).
+\bibitem{hks} M.~Harris, S.~S.~Kudla and W.~J.~Sweet, Theta dichotomy for unitary groups, \emph{J. Amer. Math. Soc.} 9 (1996), 941--1004.
+\bibitem{cs} S.~Chowla and A.~Selberg, On Epstein's zeta-function, \emph{J. Reine Angew. Math.} 227 (1967), 86--110.
+\bibitem{herbrand} J.~Herbrand, Sur les classes des corps circulaires, \emph{J. Math. Pures Appl.} 11 (1932), 417--441.
+\bibitem{ribet} K.~A.~Ribet, A modular construction of unramified $p$-extensions of $\mathbf{Q}(\mu_p)$, \emph{Invent. Math.} 34 (1976), 151--162.
+\bibitem{fw} B.~Ferrero and L.~C.~Washington, The Iwasawa invariant $\mu_p$ vanishes for abelian number fields, \emph{Ann. of Math.} 109 (1979), 377--395.
+\bibitem{kurihara} M.~Kurihara, Some remarks on conjectures about cyclotomic fields and $K$-groups of $\mathbf{Z}$, \emph{Compositio Math.} 81 (1992), 223--236.
+\bibitem{weibel} C.~Weibel, Algebraic $K$-theory of rings of integers in local and global fields, in \emph{Handbook of $K$-Theory}, Springer, 2005, 139--190.
+\bibitem{green} J.~A.~Green, The characters of the finite general linear groups, \emph{Trans. Amer. Math. Soc.} 80 (1955), 402--447.
+\bibitem{shin} S.~W.~Shin, Galois representations arising from some compact Shimura varieties, \emph{Ann. of Math.} 173 (2011), 1645--1741.
+\bibitem{ch} G.~Chenevier and M.~Harris, Construction of automorphic Galois representations, II, \emph{Camb. J. Math.} 1 (2013), 53--73.
+\bibitem{caraiani} A.~Caraiani, Local-global compatibility and the action of monodromy on nearby cycles, \emph{Duke Math. J.} 161 (2012), 2311--2413; Monodromy and local-global compatibility for $\ell=p$, \emph{Algebra Number Theory} 8 (2014), 1597--1646.
+\bibitem{ht} M.~Harris and R.~Taylor, \emph{The Geometry and Cohomology of Some Simple Shimura Varieties}, Princeton University Press, 2001.
+\bibitem{henniart} G.~Henniart, Une preuve simple des conjectures de Langlands pour $GL(n)$ sur un corps $p$-adique, \emph{Invent. Math.} 139 (2000), 439--455.
+\bibitem{scholze} P.~Scholze, The local Langlands correspondence for $GL_n$ over $p$-adic fields, \emph{Invent. Math.} 192 (2013), 663--715.
+\bibitem{landau} E.~Landau, Über einen Satz von Tschebyschef, \emph{Math. Ann.} 61 (1905), 527--550.
+\bibitem{widder} D.~V.~Widder, \emph{The Laplace Transform}, Princeton University Press, 1941, Chapter II.
+\bibitem{kp} J.~Kaczorowski and J.~Pintz, Oscillatory properties of arithmetical functions.~I, \emph{Acta Math. Hungar.} 48 (1986), 173--185.
+\end{thebibliography}
+\end{document}
