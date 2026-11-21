@@ -1,0 +1,47 @@
+\documentclass[11pt,oneside]{book}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,mathrsfs}
+\usepackage{fontspec}
+\setmonofont[Path=fonts/,Scale=0.85]{JetBrainsMono.ttf}
+\usepackage{newunicodechar}
+\usepackage{booktabs,longtable,array,enumitem}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black]{hyperref}
+\setlist{itemsep=2pt,topsep=4pt}
+\sloppy\emergencystretch=5em
+
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Lean}[1]{\texttt{#1}}
+\newcommand{\leanref}[3]{\par{\footnotesize\raggedright\noindent\textsf{Lean:}\ \texttt{#1}\ \ (\texttt{#2}, lines #3)\par}}
+\newcommand{\Q}{\mathbf{Q}}\newcommand{\Z}{\mathbf{Z}}\newcommand{\C}{\mathbf{C}}
+\newcommand{\R}{\mathbf{R}}\newcommand{\N}{\mathbf{N}}\newcommand{\F}{\mathbf{F}}
+\newcommand{\Sha}{\mbox{\fontencoding{U}\fontfamily{wncy}\selectfont Sh}}
+\renewcommand{\Sha}{\mathrm{Sha}}
+\renewcommand{\Re}{\operatorname{Re}}\renewcommand{\Im}{\operatorname{Im}}
+\DeclareMathOperator{\Gal}{Gal}\DeclareMathOperator{\GL}{GL}\DeclareMathOperator{\U}{U}
+\DeclareMathOperator{\Frob}{Frob}
+\newcommand{\ASK}{\mathrm{ASK}}\newcommand{\Main}{\mathrm{Main}}
+\newcommand{\Ga}{\mathrm{Ga}}\newcommand{\Fo}{\mathrm{Fo}}\newcommand{\Ee}{\mathrm{Ee}}
+\newcommand{\sg}{\mathrm{sg}}\newcommand{\gainD}{\mathrm{gainD}}
+
+% common Unicode characters that may appear in running text
+\newunicodechar{ψ}{\ensuremath{\psi}}\newunicodechar{χ}{\ensuremath{\chi}}\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{ℓ}{\ensuremath{\ell}}\newunicodechar{≤}{\ensuremath{\le}}\newunicodechar{≥}{\ensuremath{\ge}}
+\newunicodechar{→}{\ensuremath{\to}}\newunicodechar{∈}{\ensuremath{\in}}\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{θ}{\ensuremath{\theta}}\newunicodechar{ρ}{\ensuremath{\rho}}\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{μ}{\ensuremath{\mu}}\newunicodechar{λ}{\ensuremath{\lambda}}\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}\newunicodechar{Λ}{\ensuremath{\Lambda}}\newunicodechar{ζ}{\ensuremath{\zeta}}
+\newunicodechar{γ}{\ensuremath{\gamma}}\newunicodechar{δ}{\ensuremath{\delta}}\newunicodechar{η}{\ensuremath{\eta}}
+\newunicodechar{α}{\ensuremath{\alpha}}\newunicodechar{β}{\ensuremath{\beta}}\newunicodechar{τ}{\ensuremath{\tau}}
+\newunicodechar{ω}{\ensuremath{\omega}}\newunicodechar{ξ}{\ensuremath{\xi}}\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{≠}{\ensuremath{\ne}}\newunicodechar{∞}{\ensuremath{\infty}}\newunicodechar{⊂}{\ensuremath{\subset}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}\newunicodechar{∑}{\ensuremath{\sum}}\newunicodechar{√}{\ensuremath{\surd}}

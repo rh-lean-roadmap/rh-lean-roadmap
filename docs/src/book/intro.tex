@@ -1,0 +1,50 @@
+\chapter*{Introduction}\addcontentsline{toc}{chapter}{Introduction}\label{ch:intro}
+
+On 20 November 2026 Levent Alpöge announced a proof, found with Claude, of the Riemann hypothesis and of the generalized Riemann hypothesis for Dirichlet $L$-functions. The proof is a Lean~4 archive of 175{,}187 files and 17.4 million lines, without comments, checked by several independent kernels \cite{sutherland-2026}; on 21 November 2026 the Lean and Mathlib communities, with the endorsement of the Lean FRO and the Mathlib Initiative, certified that its statement and proof are correct \cite{leanfro-2026}. This book gives the argument of the archive as mathematics: every statement the proof needs, in the order in which the proof uses it, with a proof written for a reader and the location of the Lean declaration that proves it.
+
+\section*{The theorem}
+
+The archive proves, for Mathlib's definitions of $\zeta$ and of $L(s,\chi)$:
+\begin{itemize}
+\item if $\zeta(s)=0$, $s\neq1$ and $s$ is not a negative even integer, then $\Re s=\tfrac12$;
+\item for every Dirichlet character $\chi$ of any modulus, $L(s,\chi)\ne0$ when $\Re s>\tfrac12$ (for the principal character, $s=1$ is excluded, where Mathlib assigns a value to the pole);
+\item every zero of $L(s,\chi)$ with $0<\Re s<1$ lies on $\Re s=\tfrac12$, for all $\chi$ and for primitive $\chi$.
+\end{itemize}
+All five statements follow from one theorem: no Dirichlet $L$-function vanishes to the right of the critical line.
+
+\section*{The argument in six steps}
+
+\begin{enumerate}
+\item \emph{The critical line} (Part~I). For primitive $\chi$ the functional equation reflects zeros in $0<\Re s<\tfrac12$ to $\tfrac12<\Re s<1$, and imprimitive $L$-functions differ from primitive ones by Euler factors without zeros in $\Re s>0$. It suffices to show $L(s,\chi)\ne0$ for $\Re s>\tfrac12$ and primitive $\chi$.
+\item \emph{A window criterion} (Part~I). Fix a primitive character $\psi$ of order $o$ and let $\mathcal X$ be the $o$ primitive characters induced by its powers. A Landau-type argument shows: if a weighted, centred prime sum $G_m(y)$ satisfies $G_m(y)\le y^{\theta}$ on whole intervals $[Y,Y^{3/2}]$ for arbitrarily large $Y$, then no $L(s,\chi)$, $\chi\in\mathcal X$, vanishes for $\Re s>\theta$. Only a one-sided bound is needed, and only on a sequence of windows.
+\item \emph{The prime sum over Frobenius classes} (Part~II). For each point $x$ of a window the prime sum is distributed over the Frobenius classes of a finite abelian Galois group. Orthogonality of characters turns the count in each class into a sum over characters; averaging over a cyclic subgroup leaves the target family $\mathcal X$ together with three families of companion characters twisted by the quadratic characters of two auxiliary primes $q,d$. The auxiliary primes are chosen for each window by a mean-square estimate over candidate primes and a zero-density estimate, so that every twisted companion obeys a square-root bound on the whole window.
+\item \emph{Multiplicity from theta lifts} (Parts~III and~IV). The proof follows Stepanov's method for curves over finite fields, in which an auxiliary function vanishes to high order at many points. Over the integers the archive builds the multiplicity from a chain of about $\sqrt x$ theta lifts between definite unitary groups. Each lift applies a differential operator, given by the weights, to a local theta kernel; the factorials it produces, minus what the denominators of a formal-group expansion can cancel, give a computable lower bound for the divisibility of the periods by each prime, valid on a whole lattice. The input lattice is then divided by these prime powers, and the pairing stays integral against a global lattice glued across Hecke characters.
+\item \emph{Two bounds on one slope} (Part~V). Division raises the average slope of the lattices by a sum of logarithms of primes, which is the prime sum of step~3 up to a small loss. The size of the period maps at the complex places, through a slope inequality for the whole family of maps, bounds the same slope from above. This is Stepanov's inequality ``multiplicity times number of points is at most the degree''. The main terms on the arithmetic and geometric sides are the same number, and the chain length $\sqrt x$ puts the error at square-root size.
+\item \emph{Extra divisibility} (Part~VI). Divisibility of special values that does not come from the chain is bounded by an estimate for the total length of Tate--Shafarevich-type groups over a family of CM subfields of cyclotomic fields.
+\end{enumerate}
+
+\section*{The three inputs}
+
+In Lean, steps~3 to~6 start from three statements, proved elsewhere in the archive:
+\begin{itemize}
+\item \textsf{Green}: the classification of the cuspidal characters of $\GL_d(\F_p)$ by irreducible polynomials (Part~VII);
+\item \textsf{VWin}: the window bound for Tate--Shafarevich-type groups (Part~VI);
+\item \textsf{HypsAlt}: a structure of 46 fields asserting that one family of data satisfies all the conditions of the theta chain at once (Part~VIII).
+\end{itemize}
+The proofs of \textsf{VWin} and \textsf{HypsAlt} use Galois representations attached to polarized cuspidal automorphic representations and a local Langlands correspondence; Part~IX describes the forms in which the archive proves them.
+
+\section*{How the book is written}
+
+\begin{itemize}
+\item The arguments made for this proof are given with proofs. Results from the literature (prime number theorems in progressions, zero-density estimates, Siegel's mass formula, Galois representations, local Langlands, Kato's Euler system, foundations of étale cohomology) are stated in the form the archive uses, with references, and a sentence records how the archive's version compares with the published one.
+\item Statements are numbered by node identifiers such as \ref{B3.12}, which group them by part. After each statement, a line of the form \textsf{Lean:} \Lean{name} (\Lean{module}, lines $a$--$b$) gives the archive declaration that proves it. The archive often contains several versions of a result; the one cited is the version on the path of the final proof. The archive version is the one with SHA-256 \Lean{9631b4f0\ldots c7fc}.
+\item Lean engineering (coercions, bookkeeping, routine inequalities) is absorbed into the proofs.
+\end{itemize}
+
+\section*{Reading order}
+
+Part~I and the first chapters of Parts~II and~V give the frame of the argument. Parts~III, IV and~V contain the new mechanism: the local divisibility of one theta lift, its accumulation along the chain and the slope inequality that turns it into a bound for prime sums. Parts~VI to~IX treat the inputs.
+
+\section*{About this text}
+
+An independent author set the direction and made the editorial decisions; the text was drafted and cross-checked by several AI models, including Claude, working from the Lean source. Alpöge works at Anthropic; this text is independent of him and of Anthropic. The mathematics is Alpöge's archive; the exposition is ours.

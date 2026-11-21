@@ -31,7 +31,7 @@ On 20 November 2026, Levent Alpöge announced Lean proofs of the Riemann hypothe
 
 \section*{Before reading}
 \begin{itemize}
-\item \textbf{What has been verified.} The correctness of the archive is guaranteed by the Lean kernel and the several independent checkers collected by Sutherland\,\cite{sutherland}. When this article says that ``the archive proves'' a statement, it means that the statement is a checked Lean theorem in the archive; we supply the mathematical translation.
+\item \textbf{What has been verified.} The correctness of the archive is guaranteed by the Lean kernel and the several independent checkers collected by Sutherland\,\cite{sutherland}. On 21 November the Lean and Mathlib communities, with the endorsement of the Lean FRO and the Mathlib Initiative, certified that the statement and the proof are correct\,\cite{leanfro}. When this article says that ``the archive proves'' a statement, it means that the statement is a checked Lean theorem in the archive; we supply the mathematical translation.
 \item \textbf{How we read it.} We compiled locally the part deriving the Riemann hypothesis from the three inputs (17{,}279 files), traced the proof terms from the final theorem to count the declarations actually used, and built a source index for the entire archive. Several AI models divided the detailed tracing among themselves. Every conclusion was required to include declaration names and line numbers, and a model from another provider checked it against the source. The archive locations preferentially list the versions actually used by the compiled proof. The archive often contains several versions of the same conclusion, only one of which lies on the path to the final proof.
 \item \textbf{How locations are written.} ``\Lean{SigALe.lean:38}'' gives a filename and line number; full paths appear in the appendix. We use the archive version with SHA-256 \Lean{9631b4f0\ldots c7fc}, the version checked by Sutherland.
 \item \textbf{Authorship.} An independent author set the direction and made the choices; several AI models, including Anthropic's Claude, read the archive, wrote the text, and cross-checked it. Alpöge works at Anthropic. This article is independent of him and Anthropic.
@@ -328,6 +328,7 @@ The following questions concern the reasons for the design and do not affect cor
 
 \begin{thebibliography}{99}\small
 \bibitem{sutherland} A.~V.~Sutherland, \emph{Verification files for the Lean proof of the Riemann Hypothesis}, \url{https://math.mit.edu/~drew/grh/}.
+\bibitem{leanfro} Lean and Mathlib communities, \emph{Lean verification of the Riemann Hypothesis}, joint statement endorsed by the Lean FRO and the Mathlib Initiative, \url{https://leanprover-community.github.io/blog/posts/riemann-hypothesis/}, 2026.
 \bibitem{alpoge} L.~Alpöge, remark on the proof, \url{https://alpo.ge/remark.pdf}, 20 November 2026.
 \bibitem{stepanov} S.~A.~Stepanov, On the number of points of a hyperelliptic curve over a finite prime field, \emph{Izv. Akad. Nauk SSSR Ser. Mat.} 33 (1969), 1171--1181.
 \bibitem{bombieri} E.~Bombieri, Counting points on curves over finite fields (d'après S.~A.~Stepanov), \emph{Séminaire Bourbaki} 430 (1973).
