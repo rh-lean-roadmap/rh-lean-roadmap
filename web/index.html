@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="zh-CN" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>中线以东</title>
+<meta name="description" content="A story version of the Alpöge–Claude Lean proof of the Riemann hypothesis, in Chinese and English.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" media="print" onload="this.media='all'">
+<style>
+html, body { margin: 0; }
+/* Layout: a single story column laid over a nautical chart. The critical line Re s = 1/2 is drawn as the chart's magenta meridian and runs down the page as the spine; each chapter is one leg of the voyage, marked by a chart light. */
+:root {
+  --bg: #edf3f4;
+  --paper: #f9fbfb;
+  --shoal: #d8e7ee;
+  --land: #efe3c4;
+  --ink: #13283a;
+  --muted: #51677a;
+  --rule: #c3d3dc;
+  --light: #b3177b;
+  --lamp: #b06a0a;
+  --ok: #2a7b50;
+  --bad: #b3261e;
+  --wait: #a36610;
+  --font-display: "Fraunces", "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", Georgia, serif;
+  --font-body: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #09151f; --paper: #0f2030; --shoal: #13304a; --land: #2c2716;
+    --ink: #e1ebf1; --muted: #8ea4b5; --rule: #22394c;
+    --light: #ff62c0; --lamp: #f0b04a; --ok: #5cc68c; --bad: #ff6f62; --wait: #e8b04e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #09151f; --paper: #0f2030; --shoal: #13304a; --land: #2c2716;
+  --ink: #e1ebf1; --muted: #8ea4b5; --rule: #22394c;
+  --light: #ff62c0; --lamp: #f0b04a; --ok: #5cc68c; --bad: #ff6f62; --wait: #e8b04e;
+  color-scheme: dark;
+}
+html[data-lang="zh"] .en, html[data-lang="en"] .zh { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.85; }
+.wrap { max-width: 46rem; margin: 0 auto; padding-block: 24px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.story { position: relative; display: grid; gap: 72px; }
+.story::before { content: ""; position: absolute; top: 0; bottom: 0; left: 6px; border-left: 2px dashed var(--light); opacity: 0.45; }
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.mark { font-family: var(--font-mono); font-size: 0.78rem; color: var(--light); letter-spacing: 0.08em; }
+.lang { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; background: var(--paper); }
+.lang button { font: inherit; font-size: 0.85rem; padding: 4px 14px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--light); outline-offset: 2px; }
+
+header.hero { display: grid; gap: 18px; margin-bottom: 64px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+h1, h2 { font-family: var(--font-display); margin: 0; line-height: 1.25; text-wrap: balance; }
+h1 { font-size: clamp(2.6rem, 9vw, 4.6rem); font-weight: 800; letter-spacing: 0.02em; }
+h1 .en { font-style: italic; letter-spacing: -0.01em; }
+.lede { margin: 0; font-size: 1.08rem; color: var(--ink); max-width: 38em; }
+.cast { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-size: 0.82rem; padding: 3px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--paper); display: inline-flex; gap: 6px; align-items: center; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.dot.ok { background: var(--ok); } .dot.wait { background: var(--wait); }
+
+figure { margin: 0; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+figure.chart { padding: 0; overflow: hidden; background: var(--shoal); }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: 0.86rem; color: var(--muted); line-height: 1.7; }
+figure.chart figcaption { padding: 0 14px 12px; }
+canvas { width: 100%; display: block; }
+.ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 0.9rem; }
+.ctrl input[type="range"] { flex: 1 1 200px; min-width: 0; accent-color: var(--light); }
+.ctrl output, .readout { font-family: var(--font-mono); font-size: 0.85rem; color: var(--lamp); }
+.toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.toggle input { accent-color: var(--light); width: 16px; height: 16px; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.seg button { font: inherit; font-size: 0.85rem; padding: 4px 12px; border: 0; background: var(--paper); color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+section.ch { display: grid; gap: 16px; padding-left: 30px; position: relative; }
+section.ch > * { min-width: 0; }
+.beacon { position: absolute; left: -3px; top: 6px; width: 20px; height: 20px; }
+.beacon circle { fill: var(--bg); stroke: var(--light); stroke-width: 2; }
+.beacon path { fill: var(--light); }
+.num { font-family: var(--font-mono); font-size: 0.78rem; color: var(--lamp); letter-spacing: 0.12em; text-transform: uppercase; }
+h2 { font-size: clamp(1.5rem, 4.6vw, 2.05rem); font-weight: 800; }
+p { margin: 0; }
+.real { border: 1px dashed var(--light); background: var(--paper); padding: 8px 16px; font-size: 0.9rem; line-height: 1.75; color: var(--muted); }
+.real summary { cursor: pointer; }
+.real > span { display: block; margin-top: 6px; }
+.more summary { cursor: pointer; font-size: 0.88rem; color: var(--muted); }
+.more[open] summary { margin-bottom: 8px; }
+.tldr { background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 18px; display: grid; gap: 8px; }
+.tldr ol { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+.real .tag { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--light); }
+.math { font-family: var(--font-mono); font-size: 0.92em; white-space: nowrap; }
+blockquote { margin: 0; padding: 10px 18px; border-left: 3px solid var(--lamp); background: var(--paper); font-family: var(--font-display); font-size: 1.08rem; line-height: 1.7; }
+blockquote footer { font-family: var(--font-body); font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+.quote[hidden] { display: none !important; }
+ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.9rem; }
+.checks li { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; border-bottom: 1px dotted var(--rule); padding-bottom: 5px; }
+.checks code { font-family: var(--font-mono); font-size: 0.84em; overflow-wrap: anywhere; }
+.st { font-family: var(--font-mono); font-size: 0.78rem; display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+.st.ok { color: var(--ok); } .st.wait { color: var(--wait); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; display: inline-block; border-radius: 2px; }
+
+svg text { fill: var(--ink); font-family: var(--font-body); font-size: 12px; }
+svg text.sm { font-size: 10.5px; fill: var(--muted); }
+svg text.mono { font-family: var(--font-mono); font-size: 10.5px; }
+svg text.lt { fill: var(--light); }
+svg .ink { stroke: var(--ink); fill: none; }
+svg .mut { stroke: var(--muted); fill: none; }
+svg .rul { stroke: var(--rule); fill: none; }
+svg .mag { stroke: var(--light); fill: none; }
+svg .magF { fill: var(--light); }
+svg .lampF { fill: var(--lamp); }
+svg .okS { stroke: var(--ok); fill: none; }
+svg .waitS { stroke: var(--wait); fill: none; }
+svg .paperF { fill: var(--paper); }
+svg .shoalF { fill: var(--shoal); }
+svg .hollow { fill: var(--paper); stroke: var(--light); stroke-width: 1.5; }
+svg .hatch line { stroke: var(--light); stroke-width: 1; opacity: 0.28; }
+@media (prefers-reduced-motion: no-preference) {
+  .zero { animation: blink 3.2s ease-in-out infinite; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+}
+.end { display: grid; gap: 12px; }
+footer.foot { margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 0.86rem; color: var(--muted); display: grid; gap: 8px; }
+a { color: var(--light); }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="topbar">
+  <span class="mark">Re s = ½</span>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" id="btn-zh" aria-pressed="true">中文</button>
+    <button type="button" id="btn-en" aria-pressed="false">English</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="eyebrow"><span class="zh">一份黎曼猜想证明的故事版</span><span class="en">A story version of a proof of the Riemann hypothesis</span></div>
+  <h1><span class="zh">中线以东</span><span class="en">East of the Line</span></h1>
+  <figure class="chart">
+    <svg id="hero" viewBox="0 0 680 320" role="img" aria-label="A nautical chart of the critical strip: the vertical magenta line is real part one half, with the first ten zeros of the zeta function marked as lights on it; the half to the east is hatched.">
+      <defs>
+        <pattern id="hatch" class="hatch" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="9"/></pattern>
+      </defs>
+      <rect x="60" y="20" width="560" height="270" class="paperF" opacity="0.55"/>
+      <rect x="340" y="20" width="280" height="270" fill="url(#hatch)"/>
+      <g class="rul" stroke-width="1">
+        <line x1="60" y1="20" x2="60" y2="290"/><line x1="200" y1="20" x2="200" y2="290" stroke-dasharray="2 4"/>
+        <line x1="480" y1="20" x2="480" y2="290" stroke-dasharray="2 4"/><line x1="620" y1="20" x2="620" y2="290"/>
+        <line x1="60" y1="290" x2="620" y2="290"/>
+      </g>
+      <line x1="340" y1="12" x2="340" y2="298" class="mag" stroke-width="2" stroke-dasharray="7 5"/>
+      <g id="heroTicks"></g>
+      <g id="heroZeros"></g>
+      <text x="60" y="310" class="mono sm" text-anchor="middle">0</text>
+      <text x="340" y="310" class="mono lt" text-anchor="middle">½</text>
+      <text x="620" y="310" class="mono sm" text-anchor="middle">1</text>
+      <text x="530" y="44" class="sm" text-anchor="middle"><tspan class="zh">要证明：这片海里一个风眼也没有</tspan><tspan class="en">To prove: no storm eye out here</tspan></text>
+      <text x="200" y="44" class="sm" text-anchor="middle"><tspan class="zh">西岸</tspan><tspan class="en">West</tspan></text>
+    </svg>
+    <figcaption><span class="zh">海图：横向是实部（0 到 1），纵向是虚部。品红色虚线是中线，实部等于 ½。线上的灯是 ζ 函数的前 10 个零点，位置是真实的。</span><span class="en">The chart: real part across (0 to 1), imaginary part up. The dashed magenta line is the middle line, real part ½. The lights on it are the first ten zeros of the zeta function, at their true heights.</span></figcaption>
+  </figure>
+  <p class="lede"><span class="zh">2026 年 11 月 20 日，一份黎曼猜想的证明公布了。它没有论文，只有 175,187 个 Lean 代码文件，一句注释都没有。Lean 是一种让电脑逐步检查数学证明的语言。机器验过，说它对；人还没读完。下面把它讲成一桩海港里的案子，主角是一位探长、一个搭档，和一片找不到嫌疑人的海。</span><span class="en">On 20 November 2026 a proof of the Riemann hypothesis was released. There is no paper, only 175,187 files of Lean code without a single comment. Lean is a language in which a computer checks a mathematical proof step by step. Machines have checked it and say it is correct; no person has read it through. Here it is told as a harbour mystery, with an inspector, a partner, and a sea that holds no suspect.</span></p>
+  <div class="chips">
+    <span class="chip"><span class="dot ok"></span><span class="zh">机器检查：已出结论的全部通过</span><span class="en">Machine checks: every finished check passed</span></span>
+    <span class="chip"><span class="dot wait"></span><span class="zh">人读懂：作者说自己还没掌握全貌</span><span class="en">Human understanding: the author says he has not mastered it</span></span>
+  </div>
+  <p class="cast"><span class="zh">故事里的探长大致对应数学家 Levent Alpöge，搭档对应 AI 模型 Claude。对话和场景是编的；每章末尾“现实里”那几行是事实。</span><span class="en">The inspector stands roughly for the mathematician Levent Alpöge and the partner for the AI model Claude. Dialogue and scenery are invented; the “In reality” notes at the end of each chapter are the facts.</span></p>
+  <div class="tldr">
+    <b><span class="zh">先看结论，五句话讲完整个证明</span><span class="en">The whole proof in five sentences</span></b>
+    <ol>
+      <li><span class="zh">黎曼猜想说，素数个数和预测之间的误差，最多只有 √x 那么大，再乘一个涨得很慢的倍数。</span><span class="en">The Riemann hypothesis says the error in counting primes is never much more than √x.</span></li>
+      <li><span class="zh">一条 1905 年的老道理让人只需证一个上限，只要远处总能找到一整段误差不超标的区间就够了。</span><span class="en">A principle from 1905 reduces this to an upper bound: it is enough that far out there are always whole stretches where the error stays under the line.</span></li>
+      <li><span class="zh">在只有有限个数的“小世界”里，早有人用“算式的根不会比次数多”证过类似的上限，诀窍是让每个点都成为重根。</span><span class="en">In finite “small worlds” a similar bound was proved long ago from the fact that a polynomial has no more roots than its degree, by making every point a repeated root.</span></li>
+      <li><span class="zh">整数没有重根。这份证明用一串约 √x 道“船闸”（theta 提升），让某些数被素数整除很多次，用整除的次数顶替重根。</span><span class="en">Integers have no repeated roots, so this proof uses a chain of about √x “locks” (theta lifts) to make certain numbers divisible by a prime many times, with that count standing in for multiplicity.</span></li>
+      <li><span class="zh">其余的工作是把账算平，越过 ⅔ 那道坎，挡住天生带来的整除，再把一百多年的数论地基全部写成机器能检查的代码。</span><span class="en">The rest is balancing the books, getting past a wall at ⅔, screening out divisibility that is there from birth, and writing a century of number theory into code a machine can check.</span></li>
+    </ol>
+  </div>
+</header>
+
+<div class="story">
+
+<section class="ch" aria-labelledby="c1">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">第 1 章</span><span class="en">Chapter 1</span></div>
+  <h2 id="c1"><span class="zh">报案</span><span class="en">The report</span></h2>
+  <p><span class="zh">素数港有一本老账，记的是从 1 数到 x 一共有几个素数。港务处另有一张预测表，画着一条光滑的曲线。老账和预测表总对不齐，差额像潮水，一会儿高，一会儿低。</span><span class="en">The Prime Harbour keeps an old ledger of how many primes there are from 1 up to x. The harbour office has a forecast too, a smooth curve. The two never quite agree, and the difference rises and falls like a tide.</span></p>
+  <p><span class="zh">1859 年，黎曼把这潮水拆开了。差额是许多道涌浪叠出来的，每道浪来自远海上一个固定的风眼。海图上每个风眼有一个东西坐标，中线的坐标是 ½。坐标决定浪有多凶。数到一百万时，坐在中线上的风眼掀起的浪大约一千高，正好是一百万开平方；坐在 0.62 的风眼，浪大约五千二。数到一万亿，前者约一百万，后者约两千七百五十万。数得越远，靠东的风眼越压过所有人。</span><span class="en">In 1859 Riemann took the tide apart. It is a sum of swells, each coming from a fixed storm eye far out at sea. Every eye has an east–west coordinate on the chart, and the middle line sits at ½. The coordinate sets how fierce the swell is. Counting to a million, an eye on the middle line raises a swell about a thousand high, the square root of a million; an eye at 0.62 raises one about 5,200 high. Counting to a trillion, the first is about a million and the second about 27.5 million. The further you count, the more an eastern eye drowns out the rest.</span></p>
+  <p><span class="zh">黎曼猜想说，风眼全在中线上。换成账本的话，差额永远只比 √x 大一个涨得很慢的倍数，数到一百万，这个倍数才十几。前人用计算机查过极多的风眼，个个都在线上。可风眼有无穷多个，一个个看是看不完的。2026 年秋天，这桩案子落到了一位探长和他的搭档手里。</span><span class="en">The Riemann hypothesis says every eye sits on the middle line. In ledger terms, the gap is never more than √x times a slowly growing factor, a factor only in the teens when you count to a million. Computers have checked vast numbers of eyes, all on the line. But there are infinitely many, and nobody can look at them one by one. In the autumn of 2026 the case landed with an inspector and his partner.</span></p>
+
+  <figure>
+    <svg id="strip" viewBox="0 0 640 150" role="img" aria-label="A strip from real part 0 to 1 with the middle line; a storm eye and its mirror twin at the same height.">
+      <rect x="40" y="14" width="560" height="110" class="shoalF"/>
+      <rect x="320" y="14" width="280" height="110" fill="url(#hatch)"/>
+      <line x1="320" y1="8" x2="320" y2="130" class="mag" stroke-width="2" stroke-dasharray="6 4"/>
+      <line id="foldArc" x1="320" y1="69" x2="320" y2="69" class="mut" stroke-width="1.2" stroke-dasharray="3 3"/>
+      <circle id="eyeW" cx="320" cy="69" r="8" class="hollow"/>
+      <circle id="eyeE" cx="320" cy="69" r="9" class="magF"/>
+      <text x="40" y="144" class="mono sm" text-anchor="middle">0</text>
+      <text x="320" y="144" class="mono lt" text-anchor="middle">½</text>
+      <text x="600" y="144" class="mono sm" text-anchor="middle">1</text>
+      <text x="60" y="32" class="sm"><tspan class="zh">西</tspan><tspan class="en">W</tspan></text>
+      <text x="580" y="32" class="sm" text-anchor="end"><tspan class="zh">东</tspan><tspan class="en">E</tspan></text>
+    </svg>
+    <div class="ctrl">
+      <label for="sigma"><span class="zh">把风眼往东或往西拖，东西坐标 σ =</span><span class="en">Drag the eye east or west, coordinate σ =</span></label>
+      <input id="sigma" type="range" min="0.2" max="0.8" step="0.01" value="0.62">
+      <output id="sigmaOut" for="sigma">0.62</output>
+    </div>
+    <canvas id="wave" height="230" role="img" aria-label="The swell of one storm eye divided by the square root of x, against x on a log scale from 10 squared to 10 to the 12, with a band of width one."></canvas>
+    <div class="readout" id="waveRead"></div>
+    <figcaption><span class="zh">画的是单个风眼的浪 ÷ √x（只画一个，示意；真实误差是无穷多道浪的和）。空心圈是海图对折后西岸的孪生风眼：往西拖，东边就冒出一个，所以往西站并不能让浪变小。超出画面的浪用三角标出。</span><span class="en">One storm eye's swell divided by √x (one eye only, schematic; the true error sums infinitely many). The hollow circle is the mirror twin given by folding the chart: drag west and a twin appears in the east, so standing west does not calm anything. Triangles mark where the swell leaves the frame.</span></figcaption>
+  </figure>
+  <details class="real"><summary class="tag"><span class="zh">现实里 · 给懂行的读者</span><span class="en">In reality · for readers who know the field</span></summary><span class="zh">风眼是 ζ 函数的零点，东西坐标是零点的实部。每个零点给素数计数的误差贡献一个波，大小约是 x 的“实部”次方。黎曼猜想等价于误差不超过 √x 乘对数的量级。</span><span class="en">Storm eyes are zeros of the zeta function and the east–west coordinate is the real part. Each zero adds a wave to the error in counting primes, of size about x to the power of its real part. The Riemann hypothesis is equivalent to the error being at most of order √x times a logarithm.</span></details>
+</section>
+
+<section class="ch" aria-labelledby="c2">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">第 2 章</span><span class="en">Chapter 2</span></div>
+  <h2 id="c2"><span class="zh">把海图对折</span><span class="en">Folding the chart</span></h2>
+  <p><span class="zh">搭档先把海图沿中线对折。海图有条老规矩，西边每有一个风眼，东边同一高度的对称位置一定也有一个。所以只查东边就够了。</span><span class="en">The partner begins by folding the chart along the middle line. An old rule of the chart says that every eye in the west has a twin at the same height in the east. So the east is all that needs checking.</span></p>
+  <p><span class="zh">案子还顺手扩大了。沿岸别的港口先给素数分类再数。比如按除以 4 的余数分，5、13、17 余 1，记一本账；3、7、11 余 3，记另一本。这些港口各有各的风眼，规矩和素数港一样，于是并案。还有些账本是副本，和原本只差几处固定的小改动，这些改动自己不会在中线以东生出风眼，查过原本，副本就不用查。任务缩成了一句话，证明中线以东一个风眼都没有。</span><span class="en">The case also grew. Other harbours along the coast sort the primes before counting. Sorting by remainder after division by 4, say, 5, 13 and 17 leave remainder 1 and go in one ledger; 3, 7 and 11 leave remainder 3 and go in another. Each harbour has its own storm eyes, under the same rule, so the cases were joined. Some ledgers are copies of others with a few fixed small changes, and those changes never raise an eye east of the line, so checking the original is enough. The task shrank to one sentence: show there is no storm eye east of the line.</span></p>
+  <details class="real"><summary class="tag"><span class="zh">现实里 · 给懂行的读者</span><span class="en">In reality · for readers who know the field</span></summary><span class="zh">对折是函数方程。别的港口是狄利克雷 L 函数，一起证明的结论叫狄利克雷 GRH；副本是非本原特征，它的 L 函数等于本原特征的 L 函数乘有限个在右半平面不为零的欧拉因子。一般数域的 ζ 函数不在这次的范围里。</span><span class="en">The fold is the functional equation. The other harbours are Dirichlet L-functions, and the joint result is Dirichlet GRH. The copies are imprimitive characters, whose L-function is a primitive one times finitely many Euler factors that do not vanish in the right half-plane. Zeta functions of general number fields are not covered.</span></details>
+</section>
+
+<section class="ch" aria-labelledby="c3">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">第 3 章</span><span class="en">Chapter 3</span></div>
+  <h2 id="c3"><span class="zh">只看上沿的警戒线</span><span class="en">A line that only watches the top</span></h2>
+  <p><span class="zh">探长不打算出海抓风眼。他在港里设埋伏，只盯港里的水位。</span><span class="en">The inspector does not sail out to hunt storm eyes. He sets a trap in the harbour and watches only the water level.</span></p>
+  <p><span class="zh">先兑一桶水。别的港口记账带正负号。比如按除以 4 的余数分家的那个港口，余 1 的素数记加一，余 3 的记减一。主港不分家，每个素数都记加一。探长把两本账兑进一只桶，主港按整份，另一家只兑七分之一。这样每一笔最少也剩七分之六，总是正的。</span><span class="en">First he mixes a tank. The other harbours keep signed books. The harbour that sorts by remainder mod 4, for instance, writes +1 for a prime leaving remainder 1 and −1 for one leaving remainder 3. The main harbour sorts nothing and writes +1 for every prime. The inspector pours both books into one tank, the main harbour at full strength and the other at one seventh. Every entry then keeps at least six sevenths, always positive.</span></p>
+  <p><span class="zh">为什么非要全是正数？打个比方，两个人抬一张桌子，一个往上抬、一个往下压，桌子看着不动，你就看不出有人在使劲。账里全是正数，就没有人往下压。东边要是藏着风眼，它掀起的浪没法被别的浪抵消，迟早会把水位顶上去。这是 Landau 在 1905 年证明过的一条老道理。</span><span class="en">Why must everything be positive? Picture two people holding a table, one lifting and one pressing down: the table stays still and you cannot tell anyone is pushing. With every entry positive, nobody presses down. An eye hidden in the east cannot have its swell cancelled by others, and sooner or later it pushes the level up. This is an old principle Landau proved in 1905.</span></p>
+  <p><span class="zh">于是探长立了一条警戒线，高度是“数到的那个数开平方，再高一点点”。东边要是有风眼，它的浪越来越高，走到远处，水面每隔一段就会冲过这条线。反过来，只要在远处总能找到一整段水面，从头到尾都没冲过线，就说明东边没有风眼。这“一点点”可以随便取多小，取得越小，排除的范围就越贴近中线；小到没有尽头，东边就一个风眼也藏不下。</span><span class="en">So the inspector draws a warning line at the square root of the count, plus a little. If there is an eye in the east, its swell keeps growing, and far out the water crosses the line again and again. Turned around: if far out you can always find a whole stretch of water that never crosses the line, there is no eye in the east. The “little” can be as small as you like; the smaller it is, the closer to the middle line the ruled-out region reaches, and with no limit to how small, no eye can hide in the east at all.</span></p>
+  <p><span class="zh">水位往下落多深，不用管，这条线只管上面。剩下的全部功夫，都花在证明这条线守得住。</span><span class="en">How low the water falls does not matter; the line only watches the top. Everything that follows goes into proving the line holds.</span></p>
+  <figure>
+    <canvas id="win" height="240" role="img" aria-label="A schematic tank level on a log axis with a red warning line at one and a draggable window from Y to Y to the 1.5. With a hidden eye, far windows always contain a point above the line."></canvas>
+    <div class="ctrl">
+      <label for="winU"><span class="zh">把窗口往远处拖：</span><span class="en">Drag the window further out:</span></label>
+      <input id="winU" type="range" min="4" max="40" step="0.5" value="10">
+      <label class="toggle"><input id="hidden" type="checkbox"><span class="zh">东边藏一个风眼</span><span class="en">Hide an eye in the east</span></label>
+    </div>
+    <div class="readout" id="winRead"></div>
+    <figcaption><span class="zh">示意图：横轴是 log y，曲线是扣掉预测后的桶内水位，红线是警戒线。窗口在对数轴上从 Y 伸到 Y<sup>1.5</sup>，越往远越宽。打开“藏一个风眼”后，近处还能碰到平静的窗口，拖到足够远，每一扇都会变红。</span><span class="en">Schematic: the axis is log y, the curve is the tank level after subtracting the forecast, the red line is the warning line. The window runs from Y to Y<sup>1.5</sup> and widens as it moves out. With an eye hidden, a few early windows can still be calm, but far enough out every window turns red.</span></figcaption>
+  </figure>
+  <details class="real"><summary class="tag"><span class="zh">现实里 · 给懂行的读者</span><span class="en">In reality · for readers who know the field</span></summary><span class="zh">桶里的水叫 G<sub>m</sub>，是一族狄利克雷特征的平滑切比雪夫和，兑的比例是 1/(3o+1)，o 是这一族的个数。档案自己证明的窗口判据是：若任意远处都有区间 [Y, Y<sup>1.5</sup>]（例如从一万到一百万），在整段上 G<sub>m</sub>(y) ≤ y<sup>θ</sup>，则实部大于 θ 处没有零点。最后守住的警戒线是 <span class="math">y^(1/2+9ε)</span>，ε 可以任意小。这是单边上界，不是水位的精确公式。</span><span class="en">The tank is G<sub>m</sub>, smoothed Chebyshev sums over a family of Dirichlet characters mixed in the ratio 1/(3o+1), where o is the size of the family. The archive's window criterion: if arbitrarily far out there are intervals [Y, Y<sup>1.5</sup>] (say from ten thousand to a million) on which G<sub>m</sub>(y) ≤ y<sup>θ</sup> throughout, there is no zero with real part above θ. The line finally held is <span class="math">y^(1/2+9ε)</span> with ε as small as you like. It is a one-sided bound, not a formula for the level.</span></details>
+</section>
+
+<section class="ch" aria-labelledby="c4">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">第 4 章</span><span class="en">Chapter 4</span></div>
+  <h2 id="c4"><span class="zh">内湖旧案</span><span class="en">The inland-lake case</span></h2>
+  <p><span class="zh">怎么证明水面不过线？探长翻出一桩旧案。内湖里的问题是素数问题的迷你版，同样是数东西，同样要把误差压到根号，而在那里，这件事几十年前就办成了。内湖是一个只有有限个数的小世界，像钟面算术。最简单的只有 0 到 6 这七个数，5 加 4 得 9，超过 6 就减去 7，得 2。在这样的湖里画一条弯曲的湖岸，问上面有几个点。答案大约就是湖里数的个数，难的是把误差压到这个个数开平方的几倍以内。</span><span class="en">How to prove the water stays under the line? The inspector pulls out an old case. The lake's problem is a miniature of the prime problem, again counting things and again needing the error down to a square root, and there it was solved decades ago. The inland lake is a small world with finitely many numbers, like clock arithmetic. The simplest has just the seven numbers 0 to 6: 5 plus 4 is 9, and past 6 you subtract 7, giving 2. Draw a curved shore in such a lake and ask how many points it has. The answer is roughly the number of numbers in the lake; the hard part is holding the error to a few times its square root.</span></p>
+  <p><span class="zh">1969 年 Stepanov 用到了中学学过的一件事。一个 36 次的算式（也就是 x 的最高次方是 36 的多项式，比如 x³ − 2x + 1 是 3 次的）最多有 36 个根，重根按重数算，比如 (x−2)³ 在 2 这里算三个根。他专门设计了一个算式，让湖岸上的点几乎全是它的根，而且每个都是 m 重根。根的总数不能超过 36，所以点数乘 m 不超过 36。m 取 3，最多 12 个点；m 取 4，最多 9 个点。叠得越厚，点数就被压得越紧。</span><span class="en">In 1969 Stepanov used something from school. A polynomial of degree 36 has at most 36 roots, counting repeated roots with multiplicity: (x−2)³ counts three times at 2. He designed a polynomial whose roots include almost every point of the shore, each as a root of multiplicity m. The roots cannot number more than 36, so the number of points times m is at most 36. With m = 3 there are at most 12 points; with m = 4, at most 9. The thicker the stacking, the tighter the count.</span></p>
+  <figure>
+    <svg id="seals" viewBox="0 0 640 210" role="img" aria-label="Twelve points on a curve with stacks of seals; a roll of 36 seals can stack m seals on at most 36 divided by m points."></svg>
+    <div class="ctrl">
+      <label for="sealM"><span class="zh">每个点叠几层 m =</span><span class="en">Seals per point m =</span></label>
+      <input id="sealM" type="range" min="1" max="6" step="1" value="3">
+      <output id="sealOut" for="sealM">3</output>
+    </div>
+    <div class="readout" id="sealRead"></div>
+    <figcaption><span class="zh">封条卷有 36 枚，好比一个 36 次的算式最多有 36 个根。湖岸上若真有 12 个点都叠满了 m 层，就要用掉 12·m 枚。m = 4 时只够封 9 个点，所以造得出这卷封条，就证明了点数不超过 9。</span><span class="en">The roll has 36 seals, as a polynomial of degree 36 has at most 36 roots. If 12 points really each carry m seals, that takes 12·m. With m = 4 the roll covers only 9 points, so making such a roll proves there are at most 9 points.</span></figcaption>
+  </figure>
+  <p><span class="zh">这个算式设计得很巧，不用先知道点在哪里。难处在于层数叠得越厚，算式的次数也得跟着变大；Stepanov 的本事是把这笔账算得很紧，结果点数只比正常值多出根号那么一点。1973 年 Bombieri 把这个办法理得更顺。</span><span class="en">The polynomial is cleverly designed so that nobody needs to know where the points are. The catch is that thicker stacking forces a higher degree; Stepanov's skill was balancing the two so tightly that the count exceeds the expected number by only about a square root. Bombieri streamlined the method in 1973.</span></p>
+  <p><span class="zh">探长想把这个办法搬到大海上，第一步就卡住了。内湖里，让一个点一口气叠好几层，靠的是求导数，整数世界没有这件工具。作者的说法是，在整数上找重数，相当于给整数求导。叠层得另找门路。</span><span class="en">The inspector tries to take this out to sea and is stuck at once. On the lake, stacking several layers on one point is done with derivatives, and the world of whole numbers has no such tool. In the author's words, finding multiplicity over the integers corresponds to something like differentiating whole numbers. The stacking has to come from somewhere else.</span></p>
+  <details class="real"><summary class="tag"><span class="zh">现实里 · 给懂行的读者</span><span class="en">In reality · for readers who know the field</span></summary><span class="zh">封条卷是一个辅助函数，36 是它的次数，“叠 m 层”是它在这一点消失到 m 阶；少数点可以例外，另外记账。“不用知道点在哪里”靠的是：在七个数的湖里，每个数的 7 次方都等于它自己（3 的 7 次方是 2187，除以 7 余 3），这是费马小定理，也是 Frobenius 映射的雏形。Alpöge 说这份证明是 Stepanov 方法的后代。</span><span class="en">The roll of seals is an auxiliary function, 36 its degree, and “m layers” means vanishing to order m at the point; a few points may be exceptions, counted separately. Not needing to know where the points are rests on this: in the seven-number lake every number equals its own seventh power (3 to the 7th is 2187, remainder 3 on division by 7). That is Fermat's little theorem, the seed of the Frobenius map. Alpöge calls the proof a descendant of Stepanov's.</span></details>
+</section>
+
+<section class="ch" aria-labelledby="c5">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">第 5 章</span><span class="en">Chapter 5</span></div>
+  <h2 id="c5"><span class="zh">一串船闸</span><span class="en">A chain of locks</span></h2>
+  <p><span class="zh">先看整数里什么像叠层。7000 末尾有三个零，它被 10 整除了三次。一个数只要不是 0，末尾又有三个零，它至少是 1000。零越多，数被逼得越大。这和内湖的规矩是一回事：一个算式不为零，又在某点有三重根，它至少是 3 次。整数末尾的零对应算式的重根，整数的位数对应算式的次数。所以在整数世界，“能被 p 连除几次”可以顶替“叠了几层”。</span><span class="en">First, what counts as stacking among whole numbers? 7000 ends in three zeros: it is divisible by 10 three times. A number that is not 0 and ends in three zeros is at least 1000. More zeros force it to be bigger. This is the lake's rule in another form: a non-zero polynomial with a triple root somewhere has degree at least 3. Trailing zeros of a number match repeated roots of a polynomial, and the number of digits matches the degree. So among whole numbers, “how many times p divides it” can stand in for “how many layers are stacked”.</span></p>
+  <p><span class="zh">难处是，没有现成的办法逼着一个数被 p 连除很多次。两人的办法在运河上。港口后面有条运河，河上有一种老船闸，数学家叫它 theta 提升，用了很多年。货每过一道闸，货单上写的几个关键的数，就能被 p 多除几次。两人把船闸一道接一道串起来，过完整条运河，这些数要么干脆是 0，要么能被 p 连除很多次。连除的次数，就顶替了内湖里的层数。</span><span class="en">The difficulty is that nothing forces a number to be divisible by p many times. The two found their way on the canal. Behind the harbour runs a canal with an old kind of lock, which mathematicians call a theta lift and have used for many years. Each time a cargo passes a lock, a few key numbers on its papers become divisible by p a few more times. The two chained the locks one after another; after the whole canal, those numbers are either 0 or divisible by p many times over. That count stands in for the layers on the lake.</span></p>
+  <p><span class="zh">要串多少道？搭档报了个数，√X 道。拿数到一百万来算，开平方是一千。误差里有一项是“两百万除以闸数”。串 100 道，这一项是 2 万，远远超过一千；串 1000 道，降到 2000，和一千同一个量级。可账上还有一项随闸数往上涨，串得太多它又冒出来。两头一夹，只剩一千道上下这条窄缝。内湖里层数也取在根号附近，这里一道闸顶一层，闸数取根号就顺理成章。</span><span class="en">How many locks? The partner named a number: √X. Count to a million, whose square root is a thousand. One term of the error is two million divided by the number of locks. With 100 locks it is 20,000, far above a thousand; with 1000 locks it falls to 2000, the same size as a thousand. But another term grows with the number of locks, so too many locks bring it back. Squeezed from both sides, only a narrow gap around a thousand locks is left. On the lake the layers are also taken near the square root, and here each lock stands for a layer, so a square-root number of locks is the natural choice.</span></p>
+  <blockquote><span class="zh">“Claude 建议的 theta 提升链长度是 √X。（可除此之外，还能是什么呢？）”</span><span class="en">“Claude's suggested length of chain of theta lifts … was √X. (And yet, what else could it be?)”</span><footer><span class="zh">Alpöge 的原话。他说单这一句，就足以让同行从椅子上摔下来。</span><span class="en">Alpöge's words. He says this one line will suffice to make fellow mathematicians fall out of their chairs.</span></footer></blockquote>
+  <figure>
+    <svg id="lockRow" viewBox="0 0 640 46" role="img" aria-label="A row of locks whose number grows with the slider."></svg>
+    <svg id="locks" viewBox="0 0 640 300" role="img" aria-label="A toy budget on log scales: one million divided by the number of locks falls, the number of locks rises, and their sum is smallest at a thousand locks; with the squared toll the best sum is near ten thousand."></svg>
+    <div class="ctrl">
+      <label for="mlog"><span class="zh">串几道闸：</span><span class="en">Number of locks:</span></label>
+      <input id="mlog" type="range" min="1" max="5" step="0.01" value="2">
+      <output id="mOut" for="mlog">100</output>
+      <label class="toggle"><input id="oldcost" type="checkbox"><span class="zh">最初的过闸费</span><span class="en">Original toll</span></label>
+    </div>
+    <div class="readout" id="lockRead"></div>
+    <figcaption><span class="zh">玩具账：误差 = 一百万 ÷ 闸数 ＋ 闸数。第一项的形状和档案里的 2x/m 一样；档案里也确实有一项随闸数增长，但它的形状我们不知道，这里假设它就等于闸数。两项一样大时最省，闸数正好是一千，即一百万开平方。打开“最初的过闸费”，第二项换成闸数的平方（同样是假设），最好也要一万八千多，落在一万那一档，也就是一百万的三分之二次方，这是下一章的事。</span><span class="en">A toy budget: error = one million ÷ locks + locks. The first term has the shape of the archive's 2x/m. The archive also has a term that grows with the number of locks, but we do not know its shape, so here it is simply the number of locks. The budget is smallest when the two are equal, at a thousand locks, the square root of a million. Switch on “original toll” and the second term becomes the square of the number of locks (also an assumption): the best you can do is about 18,900, around ten thousand, which is a million to the power ⅔. That is the next chapter.</span></figcaption>
+  </figure>
+  <details class="real"><summary class="tag"><span class="zh">现实里 · 给懂行的读者</span><span class="en">In reality · for readers who know the field</span></summary><span class="zh">船闸是全定酉群之间的 theta 提升，链是 U(X<sub>0</sub>)→U(X<sub>1</sub>)→…→U(X<sub>m</sub>)；“被 p 多除几次”是某些周期的 p 进整除，每层是扣除分母损失后的净收益，各层不同，档案没有“每层固定加一”。2x/m 是档案误差估计里四项中的第一项，它要求 <span class="math">m ≥ x^(1/2−ε)</span>，随闸数增长的那一项要求 <span class="math">m ≤ x^(1/2+ε/2)</span>。theta 提升是早就有的工具，这次的新意是把它串成链，用来代替重数。</span><span class="en">The locks are theta lifts between definite unitary groups, the chain is U(X<sub>0</sub>)→U(X<sub>1</sub>)→…→U(X<sub>m</sub>); “divisible by p a few more times” is p-adic divisibility of certain periods, each layer contributing a net gain after a denominator loss, different from layer to layer, with no uniform “plus one”. 2x/m is the first of four terms in the archive's error estimate and needs <span class="math">m ≥ x^(1/2−ε)</span>; the term that grows with the chain needs <span class="math">m ≤ x^(1/2+ε/2)</span>. Theta lifts are an established tool; what is new is chaining them to stand in for multiplicity.</span></details>
+</section>
+
+<section class="ch" aria-labelledby="c6">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">第 6 章</span><span class="en">Chapter 6</span></div>
+  <h2 id="c6"><span class="zh">卡在三分之二</span><span class="en">Stuck at two-thirds</span></h2>
+  <p><span class="zh">账细算下来，两人撞上了一堵墙。每串一道闸，账上都要付一笔代价，就是上一章那个随闸数往上涨的项。按最初算出的代价，警戒线只能压到“数到的数的三分之二次方”。数到一百万，要守的线是一千，三分之二次方是一万，高了十倍；数到一万亿，一边是一百万，一边是一亿，高了一百倍。越往远差得越多，这样的线拦不住风眼。</span><span class="en">When the books were worked out, the two hit a wall. Every lock in the chain costs something: the term from the last chapter that grows with the number of locks. With that cost as first computed, the warning line could only be pushed down to the count raised to the power two-thirds. Counting to a million, the line to hold is a thousand and the two-thirds power is ten thousand, ten times too high; counting to a trillion it is a million against a hundred million, a hundred times too high. The further out, the worse; a line like that cannot stop the eyes.</span></p>
+  <p><span class="zh">翻过去靠两招。第一招叫“除法”，道理像换记账单位。一个整数只要不是 0，最小也是 1。如果还知道它是 1000 的倍数，那它不是 0 就至少是 1000。过完闸，货单上的数都能被 p 连除很多次。比方它们个个是 1000 的倍数，那就改用“千”做单位，24000 记成 24，7000 记成 7。账面上照样全是整数，“不是 0 就至少是 1”这条规矩照样管用，力气却大了一千倍。这一招的用处是让账算得更紧，同一本账换成更大的单位，记出来的数更小，误差的上限也就跟着压下来。作者的时间线还提到一条叫 Bost 斜率不等式的老规矩，它是这条道理的加强版，一次管一大批数。</span><span class="en">Two moves got them over. The first is called “division”, and it works like changing the unit of account. A whole number that is not 0 is at least 1. If it is also known to be a multiple of 1000, then unless it is 0 it is at least 1000. After the locks, the numbers on the papers are divisible by p many times. Suppose each is a multiple of 1000: switch to thousands as the unit, so 24,000 is written 24 and 7,000 is written 7. The books still hold whole numbers, and the rule “not 0 means at least 1” still applies, now with a thousand times the force. The point is to make the books tighter: the same account in a larger unit records smaller numbers, and the bound on the error comes down with them. The author's timeline also mentions an old rule called the Bost slope inequality, a stronger form of the same principle that handles a whole batch of numbers at once.</span></p>
+  <p><span class="zh">第二招作者叫“最大公约数”，意思是把几本账并成一本，多平均一次。</span><span class="en">The second move the author calls a “gcd”: read several ledgers together as one, and average once more.</span></p>
+  <p><span class="zh">作者附的时间线（他说是 Claude 仔细检索后整理的）从 10 月 6 日的“Stepanov 行列式”开始，船闸链、⅔ 那堵墙和这两招都记在 11 月 15 日。那天是周日。Alpöge 写道，一切是在一个周日深夜成的。五天后，证明公布。</span><span class="en">The author's timeline, which he says Claude compiled after a thorough search, begins on 6 October with “Stepanov determinant”. The chain of locks, the wall at ⅔ and both moves are dated 15 November, a Sunday. Alpöge writes that it all happened for him late on a Sunday night. Five days later the proof was public.</span></p>
+  <details class="real"><summary class="tag"><span class="zh">现实里 · 给懂行的读者</span><span class="en">In reality · for readers who know the field</span></summary><span class="zh">“除法”是用分式理想放大一个格，配对仍为整数，整除换成格的斜率收益；“最大公约数”是跨 Hecke 特征粘合整结构。⅔ 和这两招出自作者时间线第 14、15 条，Bost 斜率不等式见第 13 条。按配套导读的读法，斜率收益经高度预算进入误差估计；它们具体落在代码哪里，导读还没追清。</span><span class="en">“Division” enlarges a lattice by a fractional ideal while keeping the pairings integral, turning divisibility into a gain in slope; the “gcd” glues integral structures across Hecke characters. The ⅔ and both moves come from items 14 and 15 of the author's timeline, the Bost slope inequality from item 13. As the companion guide reads it, the slope gain enters the error estimate through a height budget; where exactly this happens in the code has not been traced yet.</span></details>
+</section>
+
+<section class="ch" aria-labelledby="c7">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">第 7 章</span><span class="en">Chapter 7</span></div>
+  <h2 id="c7"><span class="zh">纸里的水印</span><span class="en">Watermarks in the paper</span></h2>
+  <p><span class="zh">还有一处漏洞。货单上的数能被 p 整除，不一定是船闸的功劳。有的数天生就带着 p，好比纸出厂就有水印。数学家早就知道这种“天生带 p”的事。要是把水印当成闸上盖的印，账就算错了。</span><span class="en">One gap remains. If a number on the papers is divisible by p, the locks may not deserve the credit. Some numbers carry p from birth, like paper that leaves the mill with a watermark; mathematicians have long known such cases. Count a watermark as a lock's stamp and the books come out wrong.</span></p>
+  <p><span class="zh">探长的办法是挑纸。他只用一族特别挑过的纸，再证明，在他选定的那几段水面上，这种纸上的水印加起来有个上限，和主账比只是零头，记进误差就行。作者说，这一步相当于数论里一个老猜想（Vandiver 猜想）的大幅弱化版。</span><span class="en">The inspector's answer is to choose the paper. He uses only one specially chosen family of paper and proves that, on the stretches of water he picked, the watermarks on such paper add up to a capped total, small change next to the main account, which can go into the error. The author calls this a significant weakening of an old conjecture in number theory, Vandiver's.</span></p>
+  <details class="real"><summary class="tag"><span class="zh">现实里 · 给懂行的读者</span><span class="en">In reality · for readers who know the field</span></summary><span class="zh">“天生带 p”的经典例子：第 12 个伯努利数是 −691/2730，691 整除它的分子，这对应 691 次分圆域的类数能被 691 整除（Kummer）；Herbrand 和 Ribet 把这类对应精确化。档案里的水印是 Tate–Shafarevich 型群（Sha）的长度；纸是一族选定的分圆域的 CM 子域，挑选条件包括一个辅助素数除以 8 余 3、另一个除以 16 余 7；上限是 <span class="math">exp(x^ε/2)</span>，对族里每个域分别成立，只在选定窗口上成立。Vandiver 猜想最早见于 Kummer 1849 年写给 Kronecker 的信；作者的“弱化版”说法在代码里还没有找到精确对应。</span><span class="en">A classical case of a factor of p “from birth”: the twelfth Bernoulli number is −691/2730, 691 divides its numerator, and this corresponds to 691 dividing the class number of the 691st cyclotomic field (Kummer); Herbrand and Ribet made such correspondences precise. In the archive the watermarks are lengths of Tate–Shafarevich-type groups (Sha); the paper is a selected family of CM subfields of cyclotomic fields, chosen with conditions such as one auxiliary prime leaving remainder 3 mod 8 and another leaving 7 mod 16; the bound is <span class="math">exp(x^ε/2)</span>, for each field of the family separately and only on the chosen windows. Vandiver's conjecture goes back to a letter of Kummer to Kronecker in 1849; no precise counterpart of the author's “weakening” has been found in the code yet.</span></details>
+</section>
+
+<section class="ch" aria-labelledby="c8">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">第 8 章</span><span class="en">Chapter 8</span></div>
+  <h2 id="c8"><span class="zh">十七万册卷宗</span><span class="en">A hundred and seventy-five thousand files</span></h2>
+  <p><span class="zh">前面几章是破案的主线。要让每一步都站得住，底下压着的老案卷也得一册一册重新核过，那是一百多年来数论最深的一批成果，以前大多只写在论文里。证明里引用前人定理的地方有 185 处，每一处档案都在 Lean 里自己证了一遍，没有一处是“先信着再说”。</span><span class="en">The chapters so far are the main line of the case. For every step to hold, the old files underneath had to be re-examined one by one as well: some of the deepest results of more than a century of number theory, mostly found only in papers until now. The proof cites earlier theorems at 185 places, and at every one the archive proves the result in Lean itself; nothing is taken on trust.</span></p>
+  <p><span class="zh">卷宗一共 175,187 册，约 1740 万行。一个人一秒读一行，不吃不睡，要读 201 天。其中 99,187 册摆在同一个书架上，标签是“阿贝尔簇理论”。整个顶层搭在三块基石上，分别是船闸那一套的数据、第 7 章的水印上限，和一条 1955 年的经典定理。从三块基石推到黎曼猜想，用到其中 17,276 册。</span><span class="en">The archive has 175,187 files, about 17.4 million lines. Reading one line a second, without food or sleep, would take 201 days. Of these, 99,187 sit on one shelf labelled “abelian variety theory”. The top of the argument rests on three cornerstones: the data from the locks, the watermark bound of Chapter 7, and a classical theorem from 1955. Getting from those three to the Riemann hypothesis uses 17,276 of the files.</span></p>
+  <figure>
+    <canvas id="wall" height="300" role="img" aria-label="175,187 files drawn as cells of 25 files each, coloured by group: abelian variety theory, the top-level reduction, their overlap, and the rest."></canvas>
+    <div class="legend" id="wallLegend"></div>
+    <div class="ctrl">
+      <div class="seg" role="group" aria-label="View">
+        <button type="button" id="viewMachine" aria-pressed="true"><span class="zh">机器的眼光</span><span class="en">Machine's view</span></button>
+        <button type="button" id="viewHuman" aria-pressed="false"><span class="zh">这份导读的眼光</span><span class="en">This guide's view</span></button>
+      </div>
+    </div>
+    <figcaption id="wallCap"></figcaption>
+  </figure>
+  <p><span class="zh">探长也试过把证明展开成给人读的书，一印就是 25 万多页，搭档管它叫《GRH 之书》。他翻开定理 1，第一句是：因为实数可以比大小，若 σ ≠ ½，则 σ &gt; ½ 或 σ &lt; ½。他合上书，决定只公布 Lean 代码。</span><span class="en">The inspector also tried expanding the proof into a book for people. It came to more than 250,000 pages, and the partner called it the GRH “book”. He opened Theorem 1. It began by noting that because the reals are totally ordered, if σ ≠ ½ then σ &gt; ½ or σ &lt; ½. He closed it and decided to publish only the Lean.</span></p>
+  <details class="real"><summary class="tag"><span class="zh">现实里 · 给懂行的读者</span><span class="en">In reality · for readers who know the field</span></summary><span class="zh">老案卷包括局部 Langlands 对应、伽罗瓦表示、p 进霍奇理论、算术几何和类域论。185 是入口数，不是 185 条不同的定理，其中有占位和转接。三块基石在档案里叫 HypsAlt、VWin 和 Green（J. A. Green 1955 年关于有限一般线性群特征标的工作）。顶层那 17,276 个文件里，有 4,057 个也在阿贝尔簇目录里；三块基石本身的证明在其余文件中。《GRH 之书》和定理 1 出自 Alpöge 的说明。</span><span class="en">The old files include the local Langlands correspondence, Galois representations, p-adic Hodge theory, arithmetic geometry and class field theory. 185 counts entries, not distinct theorems; some are placeholders or forwarders. In the archive the three cornerstones are called HypsAlt, VWin and Green (J. A. Green's 1955 work on characters of finite general linear groups). Of the 17,276 top-level files, 4,057 also sit in the abelian variety directory; the proofs of the cornerstones are in the other files. The GRH “book” and its Theorem 1 come from Alpöge's remark.</span></details>
+</section>
+
+<section class="ch" aria-labelledby="c9">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">第 9 章</span><span class="en">Chapter 9</span></div>
+  <h2 id="c9"><span class="zh">验卷</span><span class="en">Checking the file</span></h2>
+  <p><span class="zh">验卷的是机器。MIT 的数学家 Andrew Sutherland 请来几台彼此独立写成的检查器，各自把卷宗核一遍。它们不看名气，也不问作者是谁，只回答每一步是不是从前面推得出来。到 11 月 20 日深夜，已出结果的全部通过，整份证明只用到三条最基本的公理；还有两项最慢的检查在跑。</span><span class="en">The checking is done by machines. The MIT mathematician Andrew Sutherland ran several independently written checkers over the archive. They ignore reputation and do not ask who the author is; they answer only whether each step follows from the ones before. By late on 20 November every finished check had passed, and the whole proof uses only the three most basic axioms; two of the slowest checks were still running.</span></p>
+  <details class="more"><summary><span class="zh">看检查清单</span><span class="en">See the list of checks</span></summary>
+  <figure>
+    <ul class="checks">
+      <li><span><span class="zh">全部 175,187 个模块编译通过</span><span class="en">All 175,187 modules compile</span></span><span class="st ok"><span class="dot ok"></span><span class="zh">通过</span><span class="en">pass</span></span></li>
+      <li><span><span class="zh">五个主定理只依赖三条标准公理</span><span class="en">The five main theorems use only three standard axioms</span></span><span class="st ok"><span class="dot ok"></span><span class="zh">通过</span><span class="en">pass</span></span></li>
+      <li><span><code>leanchecker</code> <span class="zh">逐模块重放</span><span class="en">replay of every module</span></span><span class="st ok"><span class="dot ok"></span><span class="zh">通过</span><span class="en">pass</span></span></li>
+      <li><span><code>nanoda</code> <span class="zh">（独立的 Rust 内核）检查全部导出</span><span class="en">(independent Rust kernel) on the full export</span></span><span class="st ok"><span class="dot ok"></span><span class="zh">接受</span><span class="en">accepts</span></span></li>
+      <li><span><code>con-leche</code> <span class="zh">检查全部导出，并比对题目与答案</span><span class="en">on the full export, and comparing statement with solution</span></span><span class="st ok"><span class="dot ok"></span><span class="zh">接受</span><span class="en">accepts</span></span></li>
+      <li><span><code>lean4lean</code> <span class="zh">逐模块检查</span><span class="en">module by module</span></span><span class="st ok"><span class="dot ok"></span><span class="zh">通过</span><span class="en">pass</span></span></li>
+      <li><span><span class="zh">Lean 默认内核与偏执内核重放导出</span><span class="en">Lean default and paranoid kernels on the export</span></span><span class="st wait"><span class="dot wait"></span><span class="zh">运行中</span><span class="en">running</span></span></li>
+      <li><span><code>lake comparator</code> <span class="zh">端到端</span><span class="en">end to end</span></span><span class="st wait"><span class="dot wait"></span><span class="zh">运行中</span><span class="en">running</span></span></li>
+    </ul>
+    <figcaption><span class="zh">状态取自 Sutherland 的报告页，时间点是 2026-11-20 22:05 UTC，之后可能已更新，以报告页为准。</span><span class="en">Status from Sutherland's report as of 2026-11-20 22:05 UTC; it may have changed since, so check the report.</span></figcaption>
+  </figure>
+  </details>
+  <p><span class="zh">老派公案小说的最后一回，探长要把众人请到堂上，一条条讲清案子是怎么破的。这桩案子偏偏缺这一回。Alpöge 写道，他在掌握这份证明周围的一大片数学之前，就把完整的论证交给了世界；他打算尽力弄懂它、讲清它、好好写出来，还说直觉告诉他，这个证明会被大大简化，很可能很快。Tao 在博客里写：“我猜消化过程需要一段时间。”</span><span class="en">In an old detective novel the last chapter gathers everyone in one room while the inspector explains how the case was solved. This case is missing that chapter. Alpöge writes that he is presenting a complete argument before having mastered a massive neighbourhood around its mathematics, that he intends to do his best to understand it, impart understanding of it and write it properly, and that his intuition insists it will be massively simplified, likely immediately. Tao writes on his blog: “I imagine the digestion process will take some time.”</span></p>
+  <div class="end">
+    <b><span class="zh">配套导读还没追清的地方</span><span class="en">What the companion guide has not yet traced</span></b>
+    <ul class="plain">
+      <li><span class="zh">每道闸的收益和过闸费具体怎么算，误差里的每一行出自哪一次提升。</span><span class="en">How each lock's gain and toll are computed, and which lift produces each line of the error.</span></li>
+      <li><span class="zh">⅔ 那堵墙在代码里是怎么越过的。</span><span class="en">How the wall at ⅔ is crossed in the code.</span></li>
+      <li><span class="zh">水印上界最难的那一块。</span><span class="en">The hardest part of the watermark bound.</span></li>
+      <li><span class="zh">按窗口查的判据和 Landau 原定理的确切关系。</span><span class="en">The exact relation between the window criterion and Landau's original theorem.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="ch" aria-labelledby="c10">
+  <svg class="beacon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 4 L11.6 8.4 L16 10 L11.6 11.6 L10 16 L8.4 11.6 L4 10 L8.4 8.4 Z"/></svg>
+  <div class="num"><span class="zh">后记</span><span class="en">Afterword</span></div>
+  <h2 id="c10"><span class="zh">为什么先倒下的是它</span><span class="en">Why this one fell first</span></h2>
+  <p><span class="zh">黎曼猜想对人来说难得惊人，可它有一样哲学没有的东西：题目能写成一行精确的定义，答案对不对能交给机器去判。这有两层用处。交卷以后，几台独立的检查器一天之内就能确认推理没错；做题的时候，每一步也有对错可查，AI 可以在人跟不上的地方一路试下去。一部“AI 写的黑格尔”没有这样的裁判，它有没有新东西、值不值得读，只能靠人慢慢读、慢慢争。</span><span class="en">The Riemann hypothesis is staggeringly hard for people, but it has something philosophy lacks: the question fits in one exact definition, and whether an answer is right can be left to machines. That helps twice. After the answer is handed in, independent checkers can confirm the reasoning within a day; while the problem is being worked, every step can be checked too, so an AI can keep going where people cannot follow. An “AI Hegel” would have no such referee: whether it says anything new, and whether it is worth reading, can only be settled by people reading and arguing, slowly.</span></p>
+  <p><span class="zh">所以先被承认的，是有裁判的那类成果。裁判只管“对”，管不了“懂”。这份证明要真正成为人的数学，还得等有人把它讲出来；到了那一关，它和哲学面对的是同一批读者。</span><span class="en">So the results that come with a referee are the first to be accepted. But a referee rules on “correct”, not on “understood”. For this proof to become human mathematics, someone still has to explain it, and at that stage it faces the same readers as philosophy.</span></p>
+</section>
+
+</div>
+
+<footer class="foot">
+  <div><span class="zh">资料：</span><span class="en">Sources: </span><a href="https://alpo.ge/remark.pdf">Alpöge, remark</a> · <a href="https://math.mit.edu/~drew/grh/">Sutherland, verification report</a> · <a href="https://terrytao.wordpress.com/2026/11/20/unforced-euler-singularity-unforced-navier-stokes-singularity-and-the-generalized-riemann-hypothesis/">Tao, blog, 2026-11-20</a></div>
+  <div id="repoLine"><span class="zh">更精确的英文导读（PDF）和 Lean 路线图见配套仓库。本页只讲证明的形状，细节以 Lean 代码为准。</span><span class="en">A more precise English guide (PDF) and a Lean roadmap are in the companion repository. This page describes the shape of the proof; the Lean code is authoritative.</span></div>
+  <div><span class="zh">这一页由一个人提出想法、定方向、做取舍，文字由多个 AI 模型（其中包括 Anthropic 的 Claude）写成并交叉核对。Alpöge 在 Anthropic 工作；本页与他、与 Anthropic 都没有隶属关系。</span><span class="en">One person came up with the idea, set the direction and made the calls; the text was written and cross-checked by several AI models, including Anthropic's Claude. Alpöge works at Anthropic; this page is not affiliated with him or with Anthropic.</span></div>
+</footer>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var NS = "http://www.w3.org/2000/svg";
+  function tok(n) { return getComputedStyle(root).getPropertyValue(n).trim(); }
+  function lang() { return root.getAttribute("data-lang") || "zh"; }
+  function T(zh, en) { return lang() === "en" ? en : zh; }
+  function el(name, attrs, parent) {
+    var e = document.createElementNS(NS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function setupCanvas(cv) {
+    var dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight || parseInt(cv.getAttribute("height"), 10);
+    cv.style.height = h + "px";
+    cv.width = Math.max(1, Math.round(w * dpr)); cv.height = Math.max(1, Math.round(h * dpr));
+    var c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+    return { c: c, w: w, h: h };
+  }
+
+  /* language */
+  var bz = document.getElementById("btn-zh"), be = document.getElementById("btn-en");
+  function setLang(l) {
+    root.setAttribute("data-lang", l);
+    root.setAttribute("lang", l === "zh" ? "zh-CN" : "en");
+    bz.setAttribute("aria-pressed", String(l === "zh")); be.setAttribute("aria-pressed", String(l === "en"));
+    try { localStorage.setItem("rh-lang", l); } catch (e) {}
+    redraw();
+  }
+
+  /* hero: first ten zeta zeros */
+  var ZEROS = [14.134725, 21.022040, 25.010858, 30.424876, 32.935062, 37.586178, 40.918719, 43.327073, 48.005151, 49.773832];
+  (function hero() {
+    var g = document.getElementById("heroZeros"), tk = document.getElementById("heroTicks");
+    function Y(t) { return 290 - t / 52 * 270; }
+    [10, 20, 30, 40, 50].forEach(function (t) {
+      el("line", { x1: 56, y1: Y(t), x2: 60, y2: Y(t), "class": "mut" }, tk);
+      var tx = el("text", { x: 50, y: Y(t) + 4, "class": "mono sm", "text-anchor": "end" }, tk); tx.textContent = t + "i";
+    });
+    ZEROS.forEach(function (t, i) {
+      var y = Y(t);
+      var c = el("circle", { cx: 340, cy: y, r: 5.5, "class": "magF zero" }, g);
+      c.style.animationDelay = (i * 0.31) + "s";
+      el("circle", { cx: 340, cy: y, r: 10, "class": "mag", "stroke-width": 1, opacity: 0.5 }, g);
+      var tx = el("text", { x: i % 2 ? 356 : 324, y: y + 4, "class": "mono sm", "text-anchor": i % 2 ? "start" : "end" }, g);
+      tx.textContent = "ρ" + (i + 1) + " = ½ + " + t.toFixed(2) + "i";
+    });
+  })();
+
+  /* A: storm eye and its twin */
+  var sig = document.getElementById("sigma"), sigOut = document.getElementById("sigmaOut");
+  function drawWave() {
+    var s = parseFloat(sig.value); sigOut.textContent = s.toFixed(2);
+    var east = Math.max(s, 1 - s), west = 1 - east;
+    var X = function (re) { return 40 + 560 * re; };
+    var eE = document.getElementById("eyeE"), eW = document.getElementById("eyeW"), arc = document.getElementById("foldArc");
+    eE.setAttribute("cx", X(east)); eW.setAttribute("cx", X(west));
+    var same = Math.abs(east - 0.5) < 0.005;
+    eW.style.display = same ? "none" : ""; arc.setAttribute("x1", X(west)); arc.setAttribute("x2", X(east));
+    var S = setupCanvas(document.getElementById("wave")), c = S.c, w = S.w, h = S.h;
+    var pl = 40, pr = 10, pt = 12, pb = 26, W = w - pl - pr, H = h - pt - pb, mid = pt + H / 2, R = 3.2, k = H / 2 / R;
+    c.fillStyle = tok("--shoal"); c.fillRect(pl, mid - k, W, 2 * k);
+    c.strokeStyle = tok("--rule"); c.lineWidth = 1; c.beginPath(); c.moveTo(pl, mid); c.lineTo(pl + W, mid); c.stroke();
+    c.font = "11px " + tok("--font-mono"); c.fillStyle = tok("--muted");
+    c.fillText("+1", 8, mid - k + 4); c.fillText("−1", 8, mid + k + 4); c.fillText("0", 18, mid + 4);
+    c.fillText("x = 10²", pl, h - 8); var r12 = "10¹²"; c.fillText(r12, pl + W - c.measureText(r12).width, h - 8);
+    var u0 = Math.log(100), u1 = Math.log(1e12), t = ZEROS[0], N = 900;
+    function curve(sp, color, width, marks) {
+      c.save(); c.beginPath(); c.rect(pl, pt, W, H); c.clip();
+      c.strokeStyle = color; c.lineWidth = width; c.beginPath();
+      for (var i = 0; i <= N; i++) {
+        var u = u0 + (u1 - u0) * i / N, y = 0.85 * Math.exp((sp - 0.5) * u) * Math.cos(t * u);
+        var px = pl + W * i / N, py = mid - y * k;
+        if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+      }
+      c.stroke(); c.restore();
+      if (!marks) return;
+      var last = -99; c.fillStyle = color;
+      for (var j = 0; j <= N; j++) {
+        var uu = u0 + (u1 - u0) * j / N, yy = 0.85 * Math.exp((sp - 0.5) * uu) * Math.cos(t * uu), px2 = pl + W * j / N;
+        if (Math.abs(yy) > R && px2 - last > 16) {
+          last = px2; var top = yy > 0, ey = top ? pt : pt + H;
+          c.beginPath();
+          if (top) { c.moveTo(px2 - 4, ey + 7); c.lineTo(px2 + 4, ey + 7); c.lineTo(px2, ey); }
+          else { c.moveTo(px2 - 4, ey - 7); c.lineTo(px2 + 4, ey - 7); c.lineTo(px2, ey); }
+          c.closePath(); c.fill();
+        }
+      }
+    }
+    if (!same) curve(west, tok("--muted"), 1.2, false);
+    curve(east, tok("--light"), 2, true);
+    var amp = Math.pow(1e10, east - 0.5);
+    document.getElementById("waveRead").textContent = same
+      ? T("风眼在中线上：除以 √x 以后，浪一直待在带子里。", "On the line: divided by √x, the swell stays inside the band.")
+      : T("东边那个风眼在 σ = " + east.toFixed(2) + "。从 x = 10² 数到 10¹²，它的浪（除以 √x 后）放大了约 " + fmt(amp) + " 倍。", "The eastern eye sits at σ = " + east.toFixed(2) + ". From x = 10² to 10¹², its swell (divided by √x) grows about " + fmt(amp) + "-fold.");
+  }
+  function fmt(v) { return v >= 100 ? Math.round(v).toLocaleString("en-US") : v.toFixed(1); }
+
+  /* B: window alibi */
+  var winU = document.getElementById("winU"), hid = document.getElementById("hidden");
+  function level(u, hidden) {
+    var b = 0.32 * Math.cos(1.4 * u) + 0.18 * Math.cos(2.1 * u + 1) + 0.1 * Math.cos(3.3 * u + 2) - 0.3;
+    if (hidden) b += 0.02 * Math.exp(0.1 * u) * Math.cos(2.6 * u + 0.5);
+    return b;
+  }
+  function drawWin() {
+    var S = setupCanvas(document.getElementById("win")), c = S.c, w = S.w, h = S.h;
+    var pl = 12, pr = 12, pt = 14, pb = 26, W = w - pl - pr, H = h - pt - pb, umax = 62, ymin = -1.4, ymax = 2.1;
+    var X = function (u) { return pl + W * u / umax; }, Yp = function (y) { return pt + H * (ymax - y) / (ymax - ymin); };
+    var U = parseFloat(winU.value), U2 = Math.min(1.5 * U, umax), hidden = hid.checked;
+    var maxIn = -9;
+    for (var u = U; u <= U2; u += 0.01) maxIn = Math.max(maxIn, level(u, hidden));
+    var breach = maxIn > 1;
+    c.globalAlpha = 0.16; c.fillStyle = breach ? tok("--bad") : tok("--ok"); c.fillRect(X(U), pt, X(U2) - X(U), H); c.globalAlpha = 1;
+    c.strokeStyle = breach ? tok("--bad") : tok("--ok"); c.lineWidth = 1.5; c.strokeRect(X(U), pt, X(U2) - X(U), H);
+    c.strokeStyle = tok("--rule"); c.lineWidth = 1; c.beginPath(); c.moveTo(pl, Yp(0)); c.lineTo(pl + W, Yp(0)); c.stroke();
+    c.strokeStyle = tok("--bad"); c.setLineDash([6, 4]); c.lineWidth = 1.5; c.beginPath(); c.moveTo(pl, Yp(1)); c.lineTo(pl + W, Yp(1)); c.stroke(); c.setLineDash([]);
+    c.font = "11px " + tok("--font-body"); c.fillStyle = tok("--bad"); c.fillText(T("警戒线", "warning line"), pl + 4, Yp(1) - 5);
+    c.fillStyle = tok("--muted"); c.fillText(T("退潮区：多低都不管", "low water: no limit needed"), pl + 4, Yp(-1.15));
+    c.save(); c.beginPath(); c.rect(pl, pt, W, H); c.clip();
+    c.strokeStyle = tok("--ink"); c.lineWidth = 1.6; c.beginPath();
+    for (var i = 0; i <= 1200; i++) { var uu = umax * i / 1200, px = X(uu), py = Yp(level(uu, hidden)); if (i === 0) c.moveTo(px, py); else c.lineTo(px, py); }
+    c.stroke(); c.restore();
+    c.font = "11px " + tok("--font-mono"); c.fillStyle = tok("--muted");
+    c.fillText("log Y = " + U.toFixed(1), X(U) + 4, pt + H + 16 > h - 4 ? h - 6 : pt + H + 16);
+    document.getElementById("winRead").textContent = breach
+      ? T("这扇窗里有一处冒过了警戒线。", "This window has a point above the warning line.")
+      : T("整扇窗都在警戒线以下，这是一份不在场证明。", "The whole window stays under the line: an alibi.");
+  }
+
+  /* C: seals */
+  var sealM = document.getElementById("sealM");
+  function drawSeals() {
+    var m = parseInt(sealM.value, 10), D = 36, P = 12, cap = Math.floor(D / m);
+    document.getElementById("sealOut").textContent = m;
+    var svg = document.getElementById("seals"); while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var pts = [], d = "";
+    for (var i = 0; i <= 120; i++) { var x = 30 + 580 * i / 120, y = 128 + 26 * Math.sin(i / 120 * Math.PI * 2.2) - 10 * Math.cos(i / 120 * Math.PI * 5); d += (i ? " L" : "M") + x.toFixed(1) + " " + y.toFixed(1); }
+    el("path", { d: d, "class": "mut", "stroke-width": 1.5, opacity: 0.6 }, svg);
+    for (var j = 0; j < P; j++) { var t = (j + 0.5) / P, xx = 30 + 580 * t, yy = 128 + 26 * Math.sin(t * Math.PI * 2.2) - 10 * Math.cos(t * Math.PI * 5); pts.push([xx, yy]); }
+    pts.forEach(function (p, j) {
+      var sealed = j < cap;
+      if (sealed) { for (var s = 0; s < m; s++) el("circle", { cx: p[0], cy: p[1] - 10 - s * 11, r: 4.6, "class": "lampF" }, svg); }
+      el("circle", { cx: p[0], cy: p[1], r: 5.5, "class": sealed ? "magF" : "hollow" }, svg);
+    });
+    for (var b = 0; b < D; b++) {
+      var used = b < Math.min(D, cap * m);
+      el("rect", { x: 30 + b * 16.1, y: 186, width: 12, height: 10, rx: 2, "class": used ? "lampF" : "paperF", stroke: tok("--rule") }, svg);
+    }
+    var lbl = el("text", { x: 30, y: 180, "class": "sm" }, svg); lbl.textContent = T("封条卷：36 枚", "Roll: 36 seals");
+    document.getElementById("sealRead").textContent = T(
+      "每点 " + m + " 层 → 这卷封条最多封住 ⌊36/" + m + "⌋ = " + cap + " 个点" + (cap < P ? "；湖岸上剩下 " + (P - cap) + " 个点封不上。" : "。"),
+      m + " per point → this roll covers at most ⌊36/" + m + "⌋ = " + cap + " points" + (cap < P ? "; " + (P - cap) + " points are left unsealed." : "."));
+  }
+
+  /* D: toy budget for the chain length */
+  var mlog = document.getElementById("mlog"), old = document.getElementById("oldcost");
+  function fmtN(v) { return Math.round(v).toLocaleString("en-US"); }
+  function drawLocks() {
+    var v = parseFloat(mlog.value), m = Math.pow(10, v), oc = old.checked, XX = 1e6;
+    function t2f(mm) { return oc ? mm * mm : mm; }
+    var t1 = XX / m, t2 = t2f(m), tot = t1 + t2;
+    document.getElementById("mOut").textContent = fmtN(m);
+    var row = document.getElementById("lockRow"); while (row.firstChild) row.removeChild(row.firstChild);
+    var n = Math.round(2 + 26 * (v - 1) / 4);
+    for (var i = 0; i < n; i++) { var x = 14 + i * 18; el("rect", { x: x, y: 12, width: 12, height: 22, rx: 2, "class": "paperF", stroke: tok("--light"), "stroke-width": 1.4 }, row); el("line", { x1: x + 6, y1: 12, x2: x + 6, y2: 34, "class": "mag", "stroke-width": 1 }, row); }
+    var cnt = el("text", { x: 626, y: 28, "class": "mono sm", "text-anchor": "end" }, row); cnt.textContent = T("闸数 ", "locks ") + fmtN(m);
+    var svg = document.getElementById("locks"); while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 70, x1 = 612, y0 = 20, y1 = 250, LX0 = 1, LX1 = 5, LY0 = 2, LY1 = 6.5;
+    var PX = function (mm) { return x0 + (x1 - x0) * (Math.log10(mm) - LX0) / (LX1 - LX0); };
+    var PY = function (val) { return y1 - (y1 - y0) * (Math.log10(Math.max(val, 1e-9)) - LY0) / (LY1 - LY0); };
+    var defs = el("defs", {}, svg), cp = el("clipPath", { id: "lkclip" }, defs); el("rect", { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }, cp);
+    el("line", { x1: x0, y1: y1, x2: x1, y2: y1, "class": "rul" }, svg); el("line", { x1: x0, y1: y0, x2: x0, y2: y1, "class": "rul" }, svg);
+    [10, 100, 1000, 1e4, 1e5].forEach(function (q) { var t = el("text", { x: PX(q), y: y1 + 16, "class": "mono sm", "text-anchor": "middle" }, svg); t.textContent = fmtN(q); });
+    [100, 1000, 1e4, 1e5, 1e6].forEach(function (q) { var t = el("text", { x: x0 - 8, y: PY(q) + 4, "class": "mono sm", "text-anchor": "end" }, svg); t.textContent = fmtN(q); });
+    var ax = el("text", { x: (x0 + x1) / 2, y: y1 + 34, "class": "sm", "text-anchor": "middle" }, svg); ax.textContent = T("闸数（对数刻度）", "locks (log scale)");
+    el("line", { x1: x0, y1: PY(1000), x2: x1, y2: PY(1000), "class": "okS", "stroke-width": 1.5, "stroke-dasharray": "6 4" }, svg);
+    var gl = el("text", { x: x1 - 4, y: PY(1000) + 15, "class": "sm", "text-anchor": "end" }, svg); gl.textContent = T("一百万开平方：1,000", "square root of a million: 1,000");
+    if (oc) { el("line", { x1: x0, y1: PY(1e4), x2: x1, y2: PY(1e4), "class": "waitS", "stroke-width": 1.5, "stroke-dasharray": "3 3" }, svg); var wl = el("text", { x: x1 - 4, y: PY(1e4) - 6, "class": "sm", "text-anchor": "end" }, svg); wl.textContent = T("一百万的 ⅔ 次方：10,000", "a million to the ⅔: 10,000"); }
+    function path(fn) { var d = ""; for (var i = 0; i <= 200; i++) { var mm = Math.pow(10, LX0 + (LX1 - LX0) * i / 200); d += (i ? " L" : "M") + PX(mm).toFixed(1) + " " + PY(fn(mm)).toFixed(1); } return d; }
+    var g = el("g", { "clip-path": "url(#lkclip)" }, svg);
+    el("path", { d: path(function (mm) { return XX / mm; }), "class": "ink", "stroke-width": 1.6 }, g);
+    el("path", { d: path(t2f), "class": "mut", "stroke-width": 1.4, "stroke-dasharray": "5 4" }, g);
+    el("path", { d: path(function (mm) { return XX / mm + t2f(mm); }), "class": "mag", "stroke-width": 3.2, opacity: 0.85 }, g);
+    var bestM = 10, bestV = Infinity;
+    for (var k = 0; k <= 400; k++) { var mm = Math.pow(10, LX0 + (LX1 - LX0) * k / 400), val = XX / mm + t2f(mm); if (val < bestV) { bestV = val; bestM = mm; } }
+    el("circle", { cx: PX(bestM), cy: PY(bestV), r: 7, "class": "hollow" }, svg);
+    var bl = el("text", { x: PX(bestM), y: PY(bestV) + 22, "class": "sm", "text-anchor": "middle" }, svg); bl.textContent = T("最省", "cheapest");
+    var l1 = el("text", { x: PX(14), y: PY(XX / 14) + 16, "class": "sm" }, svg); l1.textContent = T("一百万 ÷ 闸数", "one million ÷ locks");
+    var l2m = oc ? 900 : 30000, l2 = el("text", { x: PX(l2m) - 6, y: PY(t2f(l2m)) - 8, "class": "sm", "text-anchor": "end" }, svg); l2.textContent = oc ? T("闸数²（假设）", "locks² (assumed)") : T("闸数（假设）", "locks (assumed)");
+    var cy = Math.min(y1, Math.max(y0, PY(tot)));
+    el("circle", { cx: PX(m), cy: cy, r: 6.5, "class": "magF" }, svg);
+    document.getElementById("lockRead").textContent = T(
+      "闸数 " + fmtN(m) + "：一百万 ÷ 闸数 = " + fmtN(t1) + "，第二项 = " + fmtN(t2) + "，合计 " + fmtN(tot) + "。",
+      fmtN(m) + " locks: one million ÷ locks = " + fmtN(t1) + ", second term = " + fmtN(t2) + ", total " + fmtN(tot) + ".");
+  }
+
+  /* E: archive wall */
+  var GROUPS = [
+    { key: "top", n: 13219, zh: "顶层归约（不在阿贝尔簇目录）", en: "Top-level reduction, outside abelian varieties", c: "--light" },
+    { key: "both", n: 4057, zh: "两者都算", en: "In both", c: "--lamp" },
+    { key: "av", n: 95130, zh: "阿贝尔簇理论目录（其余）", en: "Abelian variety theory (the rest)", c: "--muted" },
+    { key: "rest", n: 62781, zh: "其他文件", en: "Other files", c: "--rule" }
+  ];
+  var view = "machine";
+  function drawWall() {
+    var cv = document.getElementById("wall"), w = cv.clientWidth, PER = 25, total = 0, cells = [];
+    GROUPS.forEach(function (g) { var k = Math.round(g.n / PER); total += k; for (var i = 0; i < k; i++) cells.push(g); });
+    var target = Math.min(340, Math.max(220, w * 0.55)), size = Math.max(3, Math.floor(Math.sqrt(w * target / total)));
+    var cols = Math.floor(w / size), rows = Math.ceil(total / cols), h = rows * size;
+    cv.setAttribute("height", h); cv.style.height = h + "px";
+    var S = setupCanvas(cv), c = S.c, gap = size > 4 ? 1 : 0;
+    cells.forEach(function (g, i) {
+      var x = (i % cols) * size, y = Math.floor(i / cols) * size, lit = view === "machine" || g.key === "top" || g.key === "both";
+      c.globalAlpha = lit ? 1 : 0.18; c.fillStyle = tok(g.c); c.fillRect(x, y, size - gap, size - gap);
+    });
+    c.globalAlpha = 1;
+    var lg = document.getElementById("wallLegend"); lg.innerHTML = "";
+    GROUPS.forEach(function (g) { var s = document.createElement("span"); var sw = document.createElement("i"); sw.className = "sw"; sw.style.background = "var(" + g.c + ")"; s.appendChild(sw); s.appendChild(document.createTextNode(T(g.zh, g.en) + " " + g.n.toLocaleString("en-US"))); lg.appendChild(s); });
+    document.getElementById("wallCap").textContent = view === "machine"
+      ? T("每格代表 25 个文件，共 175,187 个。机器的眼光里，每一格都被检查器核过，已出结论的全部通过。", "Each cell is 25 files, 175,187 in all. To the machines every cell has been checked, and every finished check passed.")
+      : T("这份导读只读到亮着的顶层：知道它在做什么，不等于读懂了每一行。暗下去的部分里有三个输入的证明，还没有人给出人能读的讲解。", "This guide reached only the lit top layer, and knowing what it does is not the same as reading every line. The dimmed part holds the proofs of the three inputs, for which no human-readable account exists yet.");
+    document.getElementById("viewMachine").setAttribute("aria-pressed", String(view === "machine"));
+    document.getElementById("viewHuman").setAttribute("aria-pressed", String(view === "human"));
+  }
+
+  function redraw() { drawWave(); drawWin(); drawSeals(); drawLocks(); drawWall(); }
+  sig.addEventListener("input", drawWave);
+  winU.addEventListener("input", drawWin); hid.addEventListener("change", drawWin);
+  sealM.addEventListener("input", drawSeals);
+  mlog.addEventListener("input", drawLocks); old.addEventListener("change", drawLocks);
+  document.getElementById("viewMachine").addEventListener("click", function () { view = "machine"; drawWall(); });
+  document.getElementById("viewHuman").addEventListener("click", function () { view = "human"; drawWall(); });
+  bz.addEventListener("click", function () { setLang("zh"); });
+  be.addEventListener("click", function () { setLang("en"); });
+  var strip = document.getElementById("strip");
+  function fromPointer(ev) { var r = strip.getBoundingClientRect(), re = ((ev.clientX - r.left) / r.width * 640 - 40) / 560; sig.value = Math.min(0.8, Math.max(0.2, re)).toFixed(2); drawWave(); }
+  var dragging = false;
+  strip.addEventListener("pointerdown", function (ev) { dragging = true; try { strip.setPointerCapture(ev.pointerId); } catch (e) {} fromPointer(ev); });
+  strip.addEventListener("pointermove", function (ev) { if (dragging) fromPointer(ev); });
+  strip.addEventListener("pointerup", function () { dragging = false; });
+  strip.style.touchAction = "pan-y"; strip.style.cursor = "ew-resize";
+  var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(redraw, 80); });
+  try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw); } catch (e) {}
+  new MutationObserver(redraw).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  var saved = null; try { saved = localStorage.getItem("rh-lang"); } catch (e) {}
+  setLang(saved === "en" ? "en" : "zh");
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+})();
+</script>
+
+</body>
+</html>
