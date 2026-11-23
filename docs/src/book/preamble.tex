@@ -1,4 +1,4 @@
-\documentclass[11pt,oneside]{book}
+\documentclass[10pt,oneside]{book}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools,mathrsfs}
 \usepackage{fontspec}
@@ -44,4 +44,8 @@
 \newunicodechar{α}{\ensuremath{\alpha}}\newunicodechar{β}{\ensuremath{\beta}}\newunicodechar{τ}{\ensuremath{\tau}}
 \newunicodechar{ω}{\ensuremath{\omega}}\newunicodechar{ξ}{\ensuremath{\xi}}\newunicodechar{κ}{\ensuremath{\kappa}}
 \newunicodechar{≠}{\ensuremath{\ne}}\newunicodechar{∞}{\ensuremath{\infty}}\newunicodechar{⊂}{\ensuremath{\subset}}
-\newunicodechar{⊆}{\ensuremath{\subseteq}}\newunicodechar{∑}{\ensuremath{\sum}}\newunicodechar{√}{\ensuremath{\surd}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}\newunicodechar{∑}{\ensuremath{\sum}}\newunicodechar{√}{\ensuremath{\surd}}\newunicodechar{ℝ}{\ensuremath{\mathbb R}}
+
+% Printed contents list parts and chapters; PDF bookmarks keep sections.
+\setcounter{tocdepth}{0}
+\AtBeginDocument{\hypersetup{bookmarksdepth=2}}

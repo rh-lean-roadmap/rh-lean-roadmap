@@ -37,8 +37,11 @@ The proofs of \textsf{VWin} and \textsf{HypsAlt} use Galois representations atta
 
 \begin{itemize}
 \item The arguments made for this proof are given with proofs. Results from the literature (prime number theorems in progressions, zero-density estimates, Siegel's mass formula, Galois representations, local Langlands, Kato's Euler system, foundations of étale cohomology) are stated in the form the archive uses, with references, and a sentence records how the archive's version compares with the published one.
-\item Statements are numbered by node identifiers such as \ref{B3.12}, which group them by part. After each statement, a line of the form \textsf{Lean:} \Lean{name} (\Lean{module}, lines $a$--$b$) gives the archive declaration that proves it. The archive often contains several versions of a result; the one cited is the version on the path of the final proof. The archive version is the one with SHA-256 \Lean{9631b4f0\ldots c7fc}.
+\item Statements are numbered by node identifiers such as \ref{B3.12}, which group them by part. The Index of Lean declarations at the end of the appendix lists, for each statement by its number, the archive declarations that prove it, with their modules and line numbers. The archive often contains several versions of a result; the one cited is the version on the path of the final proof. The archive version is the one with SHA-256 \Lean{9631b4f0\ldots c7fc}.
 \item Lean engineering (coercions, bookkeeping, routine inequalities) is absorbed into the proofs.
+\item The main text keeps every statement and the proofs of moderate length. Longer proofs are given in the appendix; in the main text an outline of each says how the proof goes and which results it uses.
+\item Chapter~\ref{ch:p1c4} proves the window criterion, Theorem~\ref{B1.31}, with a Gaussian kernel; this proof is shorter than the archive's and is not formalised. The archive's proof is given in Chapter~\ref{ch:p1c5} of the appendix. This is the only place where the main text departs from the route of the formal proof.
+\item Chapter~\ref{ch:p3c0} collects the standard facts on the Weil representation and theta lifts that Parts~III, IV and~VIII use.
 \end{itemize}
 
 \section*{Reading order}
@@ -47,4 +50,4 @@ Part~I and the first chapters of Parts~II and~V give the frame of the argument. 
 
 \section*{About this text}
 
-An independent author set the direction and made the editorial decisions; the text was drafted and cross-checked by several AI models, including Claude, working from the Lean source. Alpöge works at Anthropic; this text is independent of him and of Anthropic. The mathematics is Alpöge's archive; the exposition is ours.
+The text was written by several AI models, including Claude, working from the Lean source. An independent author, who is not a specialist in this area, set the goals and the editorial rules (plain mathematical English, no hedging, every statement tied to the Lean declaration that proves it) and organised the review: models working in isolation drafted and revised the chapters, and other models read anonymised copies of the whole book as referees, in ten rounds; every point they raised was settled against the Lean source. No human expert has reviewed the text. Where the text and the Lean archive differ, the archive is right; the proofs of a few deep lemmas in Parts V, VI and VIII are still given in outline, and the Lean declarations cited after these statements prove them. The aim is a readable account for mathematicians; shorter versions of the same argument, down to one for readers without mathematics, are listed in the repository. Alpöge works at Anthropic; this text is independent of him and of Anthropic. The mathematics is Alpöge's archive; the exposition is ours.
