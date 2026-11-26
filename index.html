@@ -3,11 +3,243 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>rh-lean-roadmap</title>
-<meta http-equiv="refresh" content="0; url=web/">
-<link rel="canonical" href="web/">
+<title>The Riemann hypothesis and GRH for Dirichlet L-functions · a readable account of the Lean proof</title>
+<meta name="description" content="A book that writes out as mathematics the argument of Levent Alpöge's Lean proof of the Riemann hypothesis and of GRH for Dirichlet L-functions, with the Lean declaration, file and lines for every statement.">
+<link rel="canonical" href="https://rh-lean-roadmap.github.io/rh-lean-roadmap/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Riemann hypothesis and GRH for Dirichlet L-functions: a readable account of the Lean proof in Alpöge’s archive">
+<meta property="og:description" content="Every result the proof uses, in the order the proof uses it, with a proof written for a reader and the Lean declaration that proves it. 1582 pages, v44.">
+<meta property="og:url" content="https://rh-lean-roadmap.github.io/rh-lean-roadmap/">
+<meta name="citation_title" content="The Riemann hypothesis and GRH for Dirichlet L-functions: a readable account of the Lean proof in Alpöge’s archive">
+<meta name="citation_author" content="rh-lean-roadmap">
+<meta name="citation_publication_date" content="2026/11/26">
+<meta name="citation_publisher" content="Zenodo">
+<meta name="citation_doi" content="10.5281/zenodo.24562451">
+<meta name="citation_pdf_url" content="https://rh-lean-roadmap.github.io/rh-lean-roadmap/docs/book.pdf">
+<style>
+:root {
+  --bg: #faf8f3; --fg: #1c1b19; --muted: #5f5b53; --rule: #dcd6c8;
+  --panel: #f1ece1; --accent: #1f3f8c; --accent-fg: #ffffff; --code: #3a352c;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15161a; --fg: #e9e6df; --muted: #a8a399; --rule: #353740;
+    --panel: #1e2027; --accent: #a7bcff; --accent-fg: #10131c; --code: #d8d2c4;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15161a; --fg: #e9e6df; --muted: #a8a399; --rule: #353740;
+  --panel: #1e2027; --accent: #a7bcff; --accent-fg: #10131c; --code: #d8d2c4;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 1.0625rem/1.6 "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Noto Serif", "Songti SC", "Noto Serif CJK SC", serif;
+  padding-block: 0 3rem;
+  overflow-wrap: break-word;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 44rem; margin: 0 auto; }
+.ui, nav, .meta, .btn, .label, table, footer, .ladder .n {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Noto Sans CJK SC", sans-serif;
+}
+a { color: var(--accent); text-underline-offset: 0.15em; }
+code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.88em; color: var(--code); overflow-wrap: anywhere; }
+nav { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-size: 0.875rem; padding-block: 1rem; border-bottom: 1px solid var(--rule); }
+nav .name { color: var(--muted); letter-spacing: 0.04em; }
+nav a { text-decoration: none; }
+header { padding-block: 2.5rem 1.5rem; }
+.meta { font-size: 0.8125rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.75rem; }
+h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1.15; margin: 0; font-weight: 600; text-wrap: balance; }
+.subtitle { font-size: clamp(1.125rem, 3vw, 1.375rem); font-style: italic; margin: 0.5rem 0 1.5rem; color: var(--muted); text-wrap: balance; }
+.lede { margin: 0 0 1.5rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0 0 1.75rem; }
+.btn { display: inline-flex; flex-direction: column; justify-content: center; padding: 0.6rem 0.95rem; border-radius: 6px; border: 1px solid var(--accent); text-decoration: none; font-size: 0.9375rem; line-height: 1.3; min-height: 44px; }
+.btn small { font-size: 0.75rem; opacity: 0.85; }
+.btn.primary { background: var(--accent); color: var(--accent-fg); }
+.status { margin: 0; padding: 1rem 1.1rem; background: var(--panel); border-radius: 6px; font-size: 0.96875rem; }
+.status div + div { margin-top: 0.6rem; }
+.label { display: block; font-size: 0.75rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+section { padding-block: 1.75rem 0.5rem; border-top: 1px solid var(--rule); margin-top: 1.75rem; }
+h2 { font-size: 1.375rem; line-height: 1.25; margin: 0 0 0.9rem; font-weight: 600; text-wrap: balance; }
+p { margin: 0 0 1rem; }
+.ladder { list-style: none; margin: 0; padding: 0; }
+.ladder li { display: grid; grid-template-columns: 4.75rem 1fr; gap: 0.25rem 1rem; padding-block: 0.8rem; border-bottom: 1px dotted var(--rule); }
+.ladder li:last-child { border-bottom: 0; }
+.ladder .n { font-size: 1.5rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ladder .n span { display: block; font-size: 0.75rem; font-weight: 400; color: var(--muted); letter-spacing: 0.04em; }
+.ladder .what { min-width: 0; }
+.ladder .what a { font-weight: 600; }
+.toc { list-style: none; margin: 0 0 1rem; padding: 0; }
+.toc li { display: flex; align-items: baseline; gap: 0.5rem; padding-block: 0.3rem; }
+.toc .no { flex: 0 0 2.6rem; font-variant: small-caps; color: var(--muted); font-family: inherit; }
+.toc .t { min-width: 0; }
+.toc .dots { flex: 1 1 1.5rem; border-bottom: 1px dotted var(--muted); transform: translateY(-0.3em); min-width: 1.5rem; }
+.toc .pg { font-variant-numeric: tabular-nums; color: var(--muted); }
+.toc li.back { margin-top: 0.4rem; }
+.specimen { margin: 0 0 1rem; padding: 1rem 1.1rem; border-left: 3px solid var(--accent); background: var(--panel); border-radius: 0 6px 6px 0; }
+.specimen p { margin: 0; }
+.specimen .lean { margin-top: 0.7rem; font-size: 0.875rem; }
+.specimen .lean .label { display: inline; margin-right: 0.4rem; }
+blockquote { margin: 0 0 1rem; padding: 0 0 0 1rem; border-left: 3px solid var(--rule); }
+.cite { position: relative; margin: 0 0 1rem; }
+pre { margin: 0; padding: 0.9rem 1rem; background: var(--panel); border-radius: 6px; overflow-x: auto; font: 0.8125rem/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--code); }
+.copy { position: absolute; top: 0.45rem; right: 0.45rem; font: 0.75rem system-ui, sans-serif; padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid var(--rule); background: var(--bg); color: var(--fg); cursor: pointer; }
+table { border-collapse: collapse; width: 100%; font-size: 0.875rem; margin: 0 0 1rem; }
+td { padding: 0.4rem 0.5rem 0.4rem 0; vertical-align: top; border-bottom: 1px solid var(--rule); }
+td:first-child { color: var(--muted); white-space: nowrap; padding-right: 1rem; }
+.tablewrap { overflow-x: auto; }
+ul.plain { padding-left: 1.1rem; margin: 0 0 1rem; }
+ul.plain li { margin-bottom: 0.35rem; }
+#zh p, #zh li { line-height: 1.8; }
+footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: 0.8125rem; color: var(--muted); }
+footer p { margin: 0 0 0.5rem; }
+@media (max-width: 480px) {
+  .ladder li { grid-template-columns: 3.9rem 1fr; }
+  .toc .no { flex-basis: 2.2rem; }
+}
+</style>
 </head>
 <body>
-<p><a href="web/">Open the story page</a> · <a href="paper/roadmap.pdf">Paper (PDF)</a> · <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap">Repository</a></p>
+<div class="wrap">
+
+<nav aria-label="Site">
+  <span class="name">rh-lean-roadmap</span>
+  <span><a href="#start">Where to start</a> · <a href="#cite">Cite</a> · <a href="#zh" lang="zh-Hans">中文</a></span>
+</nav>
+
+<header>
+  <p class="meta">A book · v44 · 26 November 2026</p>
+  <h1>The Riemann hypothesis and GRH for Dirichlet <i>L</i>-functions</h1>
+  <p class="subtitle">A readable account of the Lean proof in Alpöge’s archive</p>
+  <p class="lede">On 20 November 2026 Levent Alpöge released a Lean 4 proof, found with Claude, of the Riemann hypothesis and of the generalized Riemann hypothesis for Dirichlet <i>L</i>-functions: an archive of 175,187 files and 17.4 million lines. This book writes the argument of the archive out as mathematics. It states every result the proof uses, in the order in which the proof uses it, with a proof written for a reader, and gives for each statement the Lean declaration that proves it, with its file and line range, so that the archive remains the reference. The mathematics is Alpöge’s archive; the exposition is ours.</p>
+  <div class="actions">
+    <a class="btn primary" href="docs/book.pdf">Read the book<small>PDF · 1582 pages · 11 MB</small></a>
+    <a class="btn" href="https://doi.org/10.5281/zenodo.24562451">Zenodo<small>DOI 10.5281/zenodo.24562451</small></a>
+    <a class="btn" href="https://github.com/rh-lean-roadmap/rh-lean-roadmap">Source<small>GitHub</small></a>
+    <a class="btn" href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/issues">Report an error<small>GitHub issues</small></a>
+  </div>
+  <div class="status">
+    <div><span class="label">The Lean archive</span>Accepted by several independent kernels (<a href="https://math.mit.edu/~drew/grh/">Sutherland’s report</a>). On 21 November 2026 the Lean FRO and the Mathlib Initiative certified in a <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">joint statement</a> that the statement and the proof of the Riemann hypothesis are correct.</div>
+    <div><span class="label">This book</span>Written by AI models from the Lean source. No human expert has reviewed the text. Where the text and the archive differ, the archive is right.</div>
+  </div>
+</header>
+
+<section id="start">
+  <h2>Where to start</h2>
+  <p>The same argument at four lengths, from a story for readers with no mathematics to the full book.</p>
+  <ul class="ladder">
+    <li><div class="n">Story<span>no maths</span></div><div class="what"><a href="web/">The story version</a>, in Chinese and English, for readers with no mathematics.</div></li>
+    <li><div class="n">7<span>pages</span></div><div class="what"><a href="paper/roadmap.pdf">The roadmap</a>: the top of the argument in five steps, each tied to declarations in the archive, then the published foundations and the points still to be traced.</div></li>
+    <li><div class="n">22<span>pages</span></div><div class="what"><a href="docs/reading-guide-en.pdf">The reading guide</a>: the argument in six steps, from the prime sum over Frobenius classes to the Tate–Shafarevich window bound and the three inputs, with the location of every declaration cited. <a href="docs/reading-guide-zh.pdf" lang="zh-Hans">中文版</a> (21 pages).</div></li>
+    <li><div class="n">1582<span>pages</span></div><div class="what"><a href="docs/book.pdf">The book</a>: a main text of 497 pages, an appendix of 963 pages with the longer proofs, and the index of Lean declarations with the bibliography (122 pages).</div></li>
+  </ul>
+</section>
+
+<section id="contents">
+  <h2>The book in nine parts</h2>
+  <p>Page numbers are those printed in the book; the links open the PDF at that page.</p>
+  <ol class="toc">
+    <li><span class="no">i</span><a class="t" href="docs/book.pdf#page=8">The five statements and the window criterion</a><span class="dots"></span><span class="pg">7</span></li>
+    <li><span class="no">ii</span><a class="t" href="docs/book.pdf#page=33">The arithmetic side: prime sums and auxiliary primes</a><span class="dots"></span><span class="pg">32</span></li>
+    <li><span class="no">iii</span><a class="t" href="docs/book.pdf#page=61">Divisibility from one theta lift</a><span class="dots"></span><span class="pg">60</span></li>
+    <li><span class="no">iv</span><a class="t" href="docs/book.pdf#page=102">Divisibility along the chain and division of lattices</a><span class="dots"></span><span class="pg">101</span></li>
+    <li><span class="no">v</span><a class="t" href="docs/book.pdf#page=144">Two bounds on one slope</a><span class="dots"></span><span class="pg">143</span></li>
+    <li><span class="no">vi</span><a class="t" href="docs/book.pdf#page=197">Input two: the window bound VWin</a><span class="dots"></span><span class="pg">196</span></li>
+    <li><span class="no">vii</span><a class="t" href="docs/book.pdf#page=263">Input one: Green</a><span class="dots"></span><span class="pg">262</span></li>
+    <li><span class="no">viii</span><a class="t" href="docs/book.pdf#page=275">Input three: the witness for HypsAlt</a><span class="dots"></span><span class="pg">274</span></li>
+    <li><span class="no">ix</span><a class="t" href="docs/book.pdf#page=476">Galois representations and local Langlands in the archive</a><span class="dots"></span><span class="pg">475</span></li>
+    <li class="back"><span class="no"></span><a class="t" href="docs/book.pdf#page=498">Appendix: proofs</a><span class="dots"></span><span class="pg">497</span></li>
+    <li><span class="no"></span><a class="t" href="docs/book.pdf#page=1461">Index of Lean declarations</a><span class="dots"></span><span class="pg">1460</span></li>
+    <li><span class="no"></span><a class="t" href="docs/book.pdf#page=1572">Bibliography</a><span class="dots"></span><span class="pg">1571</span></li>
+  </ol>
+  <p>The introduction (page 4) gives the theorem and the argument in six steps. Parts I to V carry the argument from the five statements down to the three inputs that it takes from elsewhere in the archive; Parts VI to IX treat those inputs: Green’s classification of the cuspidal characters of GL<sub><i>d</i></sub>(<b>F</b><sub><i>p</i></sub>), the window bound VWin for Tate–Shafarevich-type groups, and the witness HypsAlt, a structure of 46 conditions on one family of data.</p>
+</section>
+
+<section id="lean">
+  <h2>How a statement is tied to Lean</h2>
+  <div class="specimen">
+    <p><b>Theorem 1.1</b> (Riemann hypothesis). Every zero <i>s</i> of <i>ζ</i> with <i>s</i> ≠ 1 and <i>s</i> ∉ {−2, −4, −6, …} satisfies Re <i>s</i> = 1/2.</p>
+    <p class="lean ui"><span class="label">Index of Lean declarations</span><code>riemannHypothesis</code> (file <code>Main</code>, line 4)</p>
+  </div>
+  <p>Statements are numbered by chapter, as in 1.1 or 10.19. The index at the end of the book lists, for each statement by its number, the archive declarations that prove it, with their modules and line numbers; where the archive has several versions of a result, the one cited is on the path of the final proof. The book follows Alpöge’s original archive, the version with SHA-256 <span class="mono">9631b4f0…c7fc</span>. Luke Sernau’s <a href="https://github.com/lsernau/grh-lean">grh-lean</a> (25 November 2026) is a shorter Lean rewriting of the proof; the book’s references do not point to it.</p>
+</section>
+
+<section id="written">
+  <h2>How the book was written</h2>
+  <blockquote>
+    <p>The text was written by several AI models, including Anthropic’s Claude, working from the Lean source. The author, who is not a specialist in this area, set the goals and the editorial rules and organised the review: models working in isolation drafted the chapters, and models from multiple families read anonymised copies of the whole book as referees over repeated rounds; every point they raised was settled against the Lean source. No human expert has reviewed the text. Where the text and the archive differ, the archive is right. Sources, the Lean index and the review procedure: <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap">https://github.com/rh-lean-roadmap/rh-lean-roadmap</a>. Alpöge works at Anthropic; this work is independent of him and of Anthropic.</p>
+  </blockquote>
+  <p>Sixty-three proofs, all in Part VIII, are headed “Proof (outline)”; each states its steps and ends with the Lean declaration that contains the complete proof. They are listed in <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/blob/main/docs/outline-proofs.md">outline-proofs.md</a>. What was tried to shorten the proof or make it more elementary is recorded in <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/blob/main/docs/simplification-notes.md">simplification-notes.md</a>. Chapter 4 gives an alternative Gaussian-kernel proof of the window criterion that has not been formalized; the archive’s argument is included in the appendix.</p>
+</section>
+
+<section id="corrections">
+  <h2>Corrections</h2>
+  <p>Corrections are welcome as <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/issues">GitHub issues</a>. Please give the statement number and, if you can, the Lean declaration it concerns.</p>
+</section>
+
+<section id="cite">
+  <h2>Cite</h2>
+  <p>rh-lean-roadmap. <i>The Riemann hypothesis and GRH for Dirichlet L-functions: a readable account of the Lean proof in Alpöge’s archive</i>. Version v44. Zenodo, 26 November 2026. <a href="https://doi.org/10.5281/zenodo.24562451">https://doi.org/10.5281/zenodo.24562451</a></p>
+  <div class="cite">
+<pre id="bibtex">@book{rhleanroadmap2026,
+  author    = {{rh-lean-roadmap}},
+  title     = {The {Riemann} hypothesis and {GRH} for {Dirichlet}
+               {$L$}-functions: a readable account of the {Lean}
+               proof in {Alp\"oge}'s archive},
+  year      = {2026},
+  version   = {v44},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24562451},
+  url       = {https://doi.org/10.5281/zenodo.24562451}
+}</pre>
+    <button class="copy" type="button" id="copybib">Copy</button>
+  </div>
+  <div class="tablewrap">
+  <table>
+    <tr><td>This version (v44)</td><td><a href="https://doi.org/10.5281/zenodo.24562451">10.5281/zenodo.24562451</a></td></tr>
+    <tr><td>All versions</td><td><a href="https://doi.org/10.5281/zenodo.24562450">10.5281/zenodo.24562450</a> (resolves to the latest)</td></tr>
+    <tr><td>Licence</td><td>Text CC BY 4.0; Lean files Apache-2.0. The Alpöge archive is separate.</td></tr>
+  </table>
+  </div>
+</section>
+
+<section id="zh" lang="zh-Hans">
+  <h2>中文</h2>
+  <p>这是一本讲解 Alpöge 的 Lean 档案的书，用英文写成，共 1582 页：按证明使用的顺序写出它需要的每条陈述，给出写给读者的证明，并标明证明它的 Lean 声明、文件和行号。证明本身是 Alpöge 的档案。文字由多个 AI 模型依据 Lean 源码写成，还没有人类专家审读过；文字与档案不一致时，以档案为准。</p>
+  <ul class="plain">
+    <li><a href="docs/reading-guide-zh.pdf">中文导读</a>（21 页）：六步讲完证明，每一步对应到档案里的定理和位置。</li>
+    <li><a href="web/">故事版</a>（中英双语）：不需要数学背景。</li>
+    <li><a href="docs/book.pdf">成文稿 PDF</a>（英文，1582 页）；纠错请提 <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/issues">GitHub issue</a>。</li>
+  </ul>
+</section>
+
+<footer>
+  <p>Sources: L. Alpöge, <a href="https://alpo.ge/remark.pdf">remark</a> and Lean archive · A. V. Sutherland, <a href="https://math.mit.edu/~drew/grh/">verification report</a> · Lean FRO and Mathlib Initiative, <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">joint statement</a>.</p>
+  <p>Repository: <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap">github.com/rh-lean-roadmap/rh-lean-roadmap</a>.</p>
+</footer>
+
+</div>
+<script>
+(function () {
+  var b = document.getElementById("copybib"), pre = document.getElementById("bibtex");
+  if (!b || !pre) return;
+  function selectPre() {
+    var r = document.createRange(); r.selectNodeContents(pre);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+  b.addEventListener("click", function () {
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    try {
+      navigator.clipboard.writeText(pre.textContent).then(done, function () { selectPre(); });
+    } catch (e) { selectPre(); }
+  });
+})();
+</script>
 </body>
 </html>

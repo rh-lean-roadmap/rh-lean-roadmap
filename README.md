@@ -1,5 +1,7 @@
 # rh-lean-roadmap
 
+Homepage: <https://rh-lean-roadmap.github.io/rh-lean-roadmap/> · Zenodo, version v44: [doi:10.5281/zenodo.24562451](https://doi.org/10.5281/zenodo.24562451)
+
 A guide for human readers to the Lean proof of the Riemann hypothesis and of the generalized Riemann hypothesis for Dirichlet *L*-functions, announced by Levent Alpöge on 20 November 2026.
 
 The proof is a Lean 4 archive of 175,187 files and 17.4 million lines, without comments. Several independent checkers have accepted it (see [Sutherland's report](https://math.mit.edu/~drew/grh/)), and on 21 November the Lean FRO and the Mathlib Initiative certified in a joint statement that the statement and the proof of the Riemann hypothesis are correct ([joint statement](https://leanprover-community.github.io/blog/posts/riemann-hypothesis/)). This repository writes the argument out for mathematicians and ties every statement to the archive.
@@ -11,7 +13,7 @@ The proof is a Lean 4 archive of 175,187 files and 17.4 million lines, without c
 | [`docs/reading-guide-en.pdf`](docs/reading-guide-en.pdf) | A reading guide in English (22 pages). The argument in six steps, each tied to the archive's declarations: the prime sum over Frobenius classes, the theta-lift chain and the local computation behind its divisibility, the division of lattices and the two-sided slope estimate that plays the role of Stepanov's inequality, the Tate–Shafarevich window bound, how the three inputs are proved, and in what form the archive proves the published theorems it uses. An appendix gives the location of every declaration cited. |
 | [`docs/reading-guide-zh.pdf`](docs/reading-guide-zh.pdf) | The same guide in Chinese (21 pages). LaTeX sources in `docs/src/` (the Chinese version uses the Noto Serif/Sans SC fonts). |
 | [`paper/roadmap.pdf`](paper/roadmap.pdf) | Seven pages, in English. The top of the argument in five steps, each tied to declarations in the archive, then the published foundations and the points still to be traced. |
-| [`web/index.html`](web/index.html) | A story version for readers with no mathematics, in Chinese and English. Read it online at <https://rh-lean-roadmap.github.io/rh-lean-roadmap/>. |
+| [`web/index.html`](web/index.html) | A story version for readers with no mathematics, in Chinese and English. Read it online at <https://rh-lean-roadmap.github.io/rh-lean-roadmap/web/>. |
 | [`video/east-of-the-line.mp4`](video/east-of-the-line.mp4) | A 75-second vertical video (Chinese, text only, original background music) for social media, with two cover images. |
 | [`lean/Roadmap.lean`](lean/Roadmap.lean) | A small Lean file. Using only the archive's own theorems, it proves inside the archive that three inputs (`Green`, `VWin`, `HypsAlt …`) imply Mathlib's `RiemannHypothesis`. |
 | [`lean/slim/`](lean/slim/) | A slicer and keep lists that cut the archive down to what `Roadmap.lean` uses: 18,096 of its 175,188 files and 3.2 of its 17.4 million lines. The slimmed copy builds with no errors. |
@@ -103,7 +105,7 @@ Sutherland's report (page last updated 2026-11-21 12:55 UTC) records the individ
 
 ## Licence
 
-Text, web page and video (`docs/`, `paper/`, `web/`, `video/`, this README): [CC BY 4.0](LICENSE). Lean file (`lean/`): [Apache-2.0](lean/LICENSE). These licences cover this repository; the Alpöge archive is separate.
+Text, web pages and video (`docs/`, `paper/`, `web/`, `video/`, `index.html`, this README): [CC BY 4.0](LICENSE). Lean file (`lean/`): [Apache-2.0](lean/LICENSE). These licences cover this repository; the Alpöge archive is separate.
 
 ---
 
@@ -114,7 +116,7 @@ Text, web page and video (`docs/`, `paper/`, `web/`, `video/`, this README): [CC
 - `docs/book.pdf`：成文稿（英文），正文 497 页，附录 963 页放较长的证明，另附 Lean 声明索引（共 1582 页）。按证明使用的顺序写出它需要的每条陈述，书末索引按陈述编号列出证明它的 Lean 声明；为这个证明新做的论证都给出了证明，长证明放在附录、正文给出思路；已发表的结果按档案用到的形式陈述并引用。文字主要由 AI 模型写成，还没有人类专家审读过；文字与档案不一致时以 Lean 档案为准；其中明确标为“Proof (outline)”的 63 处（全部在第八部分）列在 `docs/outline-proofs.md`，每处末尾写明给出完整证明的 Lean 声明；脚本检查过全书证明之间的引用与交叉引用，无循环论证、无未定义引用；
 - `docs/reading-guide-zh.pdf`：中文解读版（21 页），六步讲完证明，每一步对应到档案里的定理和位置，附录列出全部引用声明的完整位置；`docs/reading-guide-en.pdf` 是英文版；
 - `paper/roadmap.pdf`：7 页英文导读，把证明顶层的五步和档案里的具体声明一一对上；
-- `web/index.html`：中英双语的讲故事版，不需要数学背景，在线阅读：<https://rh-lean-roadmap.github.io/rh-lean-roadmap/>；
+- `web/index.html`：中英双语的讲故事版，不需要数学背景，在线阅读：<https://rh-lean-roadmap.github.io/rh-lean-roadmap/web/>；
 - `video/east-of-the-line.mp4`：75 秒竖屏短视频（纯文字介绍、原创背景音乐），附两张封面；
 - `lean/Roadmap.lean`：一个小 Lean 文件，只用档案自己的定理串出“三个输入 ⇒ 黎曼猜想”，在档案里编译通过，只依赖三条标准公理；
 - `lean/slim/`：把档案切到 `Roadmap.lean` 实际用到的部分（175,188 个文件中的 18,096 个，1,737 万行中的 317 万行），切出来的精简版编译零报错，同样只依赖三条标准公理。三个输入本身的证明仍在完整档案里，精简版不包含。清单里只有声明名和行号，不含档案源码。
