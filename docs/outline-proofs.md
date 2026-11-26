@@ -4,6 +4,7 @@ The book (`docs/book.pdf`) gives every statement the proof of RH and GRH needs. 
 
 | Statement | Title | Lean declaration with the complete proof |
 |---|---|---|
+| Lemma B8.42bof-lattices | Residue lattices and the Herr class | `GlobalTheory.Present.RedLat.red_isLat` |
 | Proposition B8.10y | The same-word estimate by leading minors | `GlobalTheory.rowsPos_typeP` |
 | Proposition B8.02b-fibre | Weighted fibre over an embedded datum | `GlobalTheory.DegAsm.sum_weights_per_datum` |
 | Lemma B8.02yac | Bessel uniqueness under an opposite-sign gap | `CompanionTheory.Bmu.besselMapUniqGap` |
@@ -49,7 +50,6 @@ The book (`docs/book.pdf`) gives every statement the proof of RH and GRH needs. 
 | Lemma B8.28yb | A theta family with a controlled harmonic value | `GlobalTheory.PowGerm.lemmaBT_of_characters` |
 | Lemma B8.28yc | Integral expansion and the theta normaliser | `GlobalTheory.PowGerm.pointStatements_on_copies`; `GlobalTheory.PtTie.harmonicValue_translate` |
 | Proposition B8.28z | Weight-change inequality for reference depths | `GlobalTheory.RefSum.WFree.refExp_vp_le_shift` |
-| Definition B8.42bof | Residue models and their extension classes | `GlobalTheory.Present.RedLat.red_isLat` |
 | Lemma B8.42bobk | Model lattices of the canonical residue realization | `GlobalTheory.Models.CharModel.model_chr_eq`; `GlobalTheory.ModelCount.count` |
 | Lemma B8.42bobh | The character obstruction | `GlobalTheory.Models.ModTh.hom_chr_eq_zero` |
 | Lemma B8.42bob | The \psi-shift dimension estimate and admissible cohomology classes | `GlobalTheory.TopSteps.CharVanish.stmt_of_real`; `GlobalTheory.TopSteps.admissibleUntwistedCharUnramified_of_residueRealisation` |
