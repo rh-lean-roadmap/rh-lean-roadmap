@@ -1,14 +1,16 @@
 # rh-lean-roadmap
 
-Homepage: <https://rh-lean-roadmap.github.io/rh-lean-roadmap/> · Zenodo, version v44: [doi:10.5281/zenodo.24562451](https://doi.org/10.5281/zenodo.24562451)
+Homepage: <https://rh-lean-roadmap.github.io/rh-lean-roadmap/> · Full book on Zenodo: [doi:10.5281/zenodo.24562451](https://doi.org/10.5281/zenodo.24562451)
 
-A guide for human readers to the Lean proof of the Riemann hypothesis and of the generalized Riemann hypothesis for Dirichlet *L*-functions, announced by Levent Alpöge on 20 November 2026.
+A mathematical exposition of the Lean proof of the Riemann hypothesis and of the generalized Riemann hypothesis for Dirichlet *L*-functions, announced by Levent Alpöge on 20 November 2026.
 
-The proof is a Lean 4 archive of 175,187 files and 17.4 million lines, without comments. Several independent checkers have accepted it (see [Sutherland's report](https://math.mit.edu/~drew/grh/)), and on 21 November the Lean FRO and the Mathlib Initiative certified in a joint statement that the statement and the proof of the Riemann hypothesis are correct ([joint statement](https://leanprover-community.github.io/blog/posts/riemann-hypothesis/)). This repository writes the argument out for mathematicians and ties every statement to the archive.
+The proof is a Lean 4 archive of 175,187 files and 17.4 million lines, without comments. Several independent checkers have accepted it (see [Sutherland's report](https://math.mit.edu/~drew/grh/)), and on 21 November the Lean FRO and the Mathlib Initiative certified in a joint statement that the statement and the proof of the Riemann hypothesis are correct ([joint statement](https://leanprover-community.github.io/blog/posts/riemann-hypothesis/)).
+
+The book, [`docs/book.pdf`](docs/book.pdf), presents the argument of the archive in mathematical prose: a main text of 497 pages, 1582 pages in all with the appendix of longer proofs and the index of Lean declarations. The index links each numbered statement of the main text to the Lean declarations that prove it, with their modules and source lines, so that any step of the text can be followed into the archive. The 7-page roadmap, [`paper/roadmap.pdf`](paper/roadmap.pdf), gives the top of the argument in five steps.
 
 | | |
 |---|---|
-| [`docs/book.pdf`](docs/book.pdf) | The argument written out for mathematicians, in English: a main text of 497 pages, an appendix of 963 pages with the longer proofs, and an index of the Lean declarations (1582 pages in all). Every statement the proof needs, in the order the proof uses it; the index at the end lists, for each statement by its number, the Lean declarations that prove it, with their files and lines. Chapter 4 proves the window criterion by a shorter argument with a Gaussian kernel, which is not formalised; the archive's proof is in the appendix. Arguments made for this proof are given with proofs, the longer ones in the appendix with an outline in the main text; published results are stated in the form the archive uses, with references. A background chapter collects the facts on the Weil representation and theta lifts that the proof uses. Nine parts: the window criterion, the prime sum and the auxiliary primes, the divisibility from one theta lift, its accumulation along the chain, the two bounds on one slope, the Tate–Shafarevich window bound, and the three inputs with the Galois representations and the local Langlands correspondence they use. LaTeX sources in `docs/src/book/`. |
+| [`docs/book.pdf`](docs/book.pdf) | The argument in mathematical prose, in English: a main text of 497 pages, an appendix of 963 pages with the longer proofs, and an index of the Lean declarations (1582 pages in all). The index at the end lists, for each numbered statement of the main text, the Lean declarations that prove it, with their modules and lines. Chapter 4 proves the window criterion by a shorter argument with a Gaussian kernel, which is not formalised; the archive's proof is in the appendix. Arguments made for this proof are given with proofs, the longer ones in the appendix with an outline in the main text; published results are stated in the form the archive uses, with references. A background chapter collects the facts on the Weil representation and theta lifts that the proof uses. Nine parts: the window criterion, the prime sum and the auxiliary primes, the divisibility from one theta lift, its accumulation along the chain, the two bounds on one slope, the Tate–Shafarevich window bound, and the three inputs with the Galois representations and the local Langlands correspondence they use. LaTeX sources in `docs/src/book/`. |
 | [`docs/simplification-notes.md`](docs/simplification-notes.md) | What was tried to shorten the proof or make it more elementary, and how each attempt came out: two simplifications used in the book, several ruled out, two still open. |
 | [`docs/reading-guide-en.pdf`](docs/reading-guide-en.pdf) | A reading guide in English (22 pages). The argument in six steps, each tied to the archive's declarations: the prime sum over Frobenius classes, the theta-lift chain and the local computation behind its divisibility, the division of lattices and the two-sided slope estimate that plays the role of Stepanov's inequality, the Tate–Shafarevich window bound, how the three inputs are proved, and in what form the archive proves the published theorems it uses. An appendix gives the location of every declaration cited. |
 | [`docs/reading-guide-zh.pdf`](docs/reading-guide-zh.pdf) | The same guide in Chinese (21 pages). LaTeX sources in `docs/src/` (the Chinese version uses the Noto Serif/Sans SC fonts). |
@@ -20,7 +22,7 @@ The proof is a Lean 4 archive of 175,187 files and 17.4 million lines, without c
 
 ## How the book was written
 
-Each chapter was drafted from the Lean source of the declarations it covers and checked against that source. Referee models from several families then read anonymised copies of the book over repeated rounds; every point they raised was settled against the Lean archive before the text was changed. Statements follow the Lean statements; where the archive proves a published theorem in a weaker form, the chapter states the form the archive proves. Where the text and the archive differ, the archive is authoritative. The text has not yet been reviewed by a human expert.
+The project organizer set the editorial rules; several AI models wrote the text from the Lean source and cross-checked it. Statements follow the Lean statements; where the archive proves a published theorem in a weaker form, the chapter states the form the archive proves.
 
 Sixty-three proofs, all in Part VIII, are headed “Proof (outline)”; each states its steps and ends by naming the Lean declaration that contains the complete proof. [`docs/outline-proofs.md`](docs/outline-proofs.md) lists them. A script builds the graph of citations between proofs, and the text is ordered so that no proof uses, directly or through other results, the statement it proves. Every build is also checked for undefined references, undefined citations and duplicate labels; there are none.
 
@@ -34,7 +36,6 @@ J. Shore traced the kernel proof terms of the five main theorems through a full 
 
 - The proof is Alpöge's archive; this repository explains its structure. The explanations come from reading the code and Alpöge's [remark](https://alpo.ge/remark.pdf), and the Lean code gives the exact statements.
 - The archive carries no licence, so the steps below download it from its author's site and check it.
-- An independent author, not a specialist in this area, set the direction and made the calls; the text and code were written and cross-checked by several AI models, including Anthropic's Claude. Alpöge works at Anthropic; this repository is independent of him and of Anthropic.
 
 ## Checking `Roadmap.lean`
 
@@ -111,9 +112,9 @@ Text, web pages and video (`docs/`, `paper/`, `web/`, `video/`, `index.html`, th
 
 ## 中文简介
 
-2026 年 11 月 20 日，Levent Alpöge 公布了和 Claude 一起完成的黎曼猜想与狄利克雷 GRH 的 Lean 证明。证明是一份 Lean 档案，17.5 万个文件、1740 万行，没有注释。几个独立的检查器已经接受了它，11 月 21 日 Lean FRO 和 Mathlib Initiative 发表联合声明，确认黎曼猜想的命题和证明都正确；Sutherland 还把它和另一个独立的形式化项目接在一起，推出了 Robin 不等式（所有 n > 5040）和 Lagarias 不等式（所有 n ≥ 1），这两个命题只讲约数和与调和数，不出现 ζ 函数。本仓库把证明写成数学家能读的文字，每条陈述都对应到档案里的定理和位置：
+2026 年 11 月 20 日，Levent Alpöge 公布了和 Claude 一起完成的黎曼猜想与狄利克雷 GRH 的 Lean 证明。证明是一份 Lean 档案，17.5 万个文件、1740 万行，没有注释。几个独立的检查器已经接受了它，11 月 21 日 Lean FRO 和 Mathlib Initiative 发表联合声明，确认黎曼猜想的命题和证明都正确；Sutherland 还把它和另一个独立的形式化项目接在一起，推出了 Robin 不等式（所有 n > 5040）和 Lagarias 不等式（所有 n ≥ 1），这两个命题只讲约数和与调和数，不出现 ζ 函数。本仓库用数学文字讲解这份档案。核心是英文成文稿：正文 497 页，全书 1582 页；书末索引按编号列出正文每条陈述对应的 Lean 声明、模块和行号，读者可以从书中任何一步查到档案里的原文。另有 7 页路线图，概括证明顶层的五步。各项材料：
 
-- `docs/book.pdf`：成文稿（英文），正文 497 页，附录 963 页放较长的证明，另附 Lean 声明索引（共 1582 页）。按证明使用的顺序写出它需要的每条陈述，书末索引按陈述编号列出证明它的 Lean 声明；为这个证明新做的论证都给出了证明，长证明放在附录、正文给出思路；已发表的结果按档案用到的形式陈述并引用。文字主要由 AI 模型写成，还没有人类专家审读过；文字与档案不一致时以 Lean 档案为准；其中明确标为“Proof (outline)”的 63 处（全部在第八部分）列在 `docs/outline-proofs.md`，每处末尾写明给出完整证明的 Lean 声明；脚本检查过全书证明之间的引用与交叉引用，无循环论证、无未定义引用；
+- `docs/book.pdf`：成文稿（英文），正文 497 页，附录 963 页放较长的证明，另附 Lean 声明索引（共 1582 页）。书末索引按陈述编号列出证明它的 Lean 声明；为这个证明新做的论证都给出了证明，长证明放在附录、正文给出思路；已发表的结果按档案用到的形式陈述并引用；第 4 章用高斯核给出窗口判据的一个更短的证明，这个证明没有形式化，档案的证明在附录里；明确标为“Proof (outline)”的 63 处（全部在第八部分）列在 `docs/outline-proofs.md`，每处末尾写明给出完整证明的 Lean 声明；脚本检查过全书证明之间的引用与交叉引用，无循环论证、无未定义引用；
 - `docs/reading-guide-zh.pdf`：中文解读版（21 页），六步讲完证明，每一步对应到档案里的定理和位置，附录列出全部引用声明的完整位置；`docs/reading-guide-en.pdf` 是英文版；
 - `paper/roadmap.pdf`：7 页英文导读，把证明顶层的五步和档案里的具体声明一一对上；
 - `web/index.html`：中英双语的讲故事版，不需要数学背景，在线阅读：<https://rh-lean-roadmap.github.io/rh-lean-roadmap/web/>；
@@ -122,4 +123,4 @@ Text, web pages and video (`docs/`, `paper/`, `web/`, `video/`, `index.html`, th
 - `lean/slim/`：把档案切到 `Roadmap.lean` 实际用到的部分（175,188 个文件中的 18,096 个，1,737 万行中的 317 万行），切出来的精简版编译零报错，同样只依赖三条标准公理。三个输入本身的证明仍在完整档案里，精简版不包含。清单里只有声明名和行号，不含档案源码。
 - 相关工作：Luke Sernau 与 Anthropic 的同事和 Claude 于 2026 年 11 月 25 日发布的 [grh-lean](https://github.com/lsernau/grh-lean) 是 Alpöge 证明的一个更短的 Lean 重写（Apache 2.0 许可）：可读版约 30 万行代码，附阅读指南；紧凑版约 7.6 万行。它的 README 说明它沿用原证明的方法，许多步骤换用了别的论证，还没有数学家通读过。2026 年 11 月 26 日，一次在滑铁卢大学计算配额上由 AI 代理运行的独立检查报告：紧凑版 794 个模块全部编译通过，五条主定理被 Lean 默认内核、paranoid 内核、lean4lean、nanoda、con-leche 和 con-ron 全部接受，只依赖三条标准公理（[检查记录](https://mrubinst.github.io/grh-lean-compact-check/)）。本仓库的成文稿和精简副本依据 Alpöge 的原始档案，Lean 引用指向原档案。
 
-证明本身是 Alpöge 的档案。档案没有许可证，上面给了从作者网站下载、校验和编译的步骤。本仓库由一位不做这个方向的独立作者定方向、做取舍，文字和代码由多个 AI 模型（其中包括 Anthropic 的 Claude）写成并交叉核对；Alpöge 在 Anthropic 工作，本仓库独立于他和 Anthropic。
+证明本身是 Alpöge 的档案。档案没有许可证，上面给了从作者网站下载、校验和编译的步骤。项目组织者制定编写规则，多个 AI 模型依据 Lean 源码撰写并交叉核对。

@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Riemann hypothesis and GRH for Dirichlet L-functions · a readable account of the Lean proof</title>
-<meta name="description" content="A book that writes out as mathematics the argument of Levent Alpöge's Lean proof of the Riemann hypothesis and of GRH for Dirichlet L-functions, with the Lean declaration, file and lines for every statement.">
+<meta name="description" content="A mathematical exposition of Levent Alpöge’s Lean proof of the Riemann hypothesis and of GRH for Dirichlet L-functions: a 497-page main text, 1582 pages in all, with an index linking numbered statements to Lean declarations, modules and source lines, and a 7-page roadmap.">
 <link rel="canonical" href="https://rh-lean-roadmap.github.io/rh-lean-roadmap/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="The Riemann hypothesis and GRH for Dirichlet L-functions: a readable account of the Lean proof in Alpöge’s archive">
-<meta property="og:description" content="Every result the proof uses, in the order the proof uses it, with a proof written for a reader and the Lean declaration that proves it. 1582 pages, v44.">
+<meta property="og:description" content="A 497-page main text, 1582 pages in all, presenting the argument of Alpöge’s Lean archive in mathematical prose, with an index linking numbered statements to Lean declarations, modules and source lines, and a 7-page roadmap.">
 <meta property="og:url" content="https://rh-lean-roadmap.github.io/rh-lean-roadmap/">
 <meta name="citation_title" content="The Riemann hypothesis and GRH for Dirichlet L-functions: a readable account of the Lean proof in Alpöge’s archive">
 <meta name="citation_author" content="rh-lean-roadmap">
@@ -62,6 +62,10 @@ h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1.15; margin: 0; font-
 .btn { display: inline-flex; flex-direction: column; justify-content: center; padding: 0.6rem 0.95rem; border-radius: 6px; border: 1px solid var(--accent); text-decoration: none; font-size: 0.9375rem; line-height: 1.3; min-height: 44px; }
 .btn small { font-size: 0.75rem; opacity: 0.85; }
 .btn.primary { background: var(--accent); color: var(--accent-fg); }
+.figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin: 0 0 1.5rem; padding: 0; }
+.figures div { border-top: 2px solid var(--accent); padding-top: 0.5rem; min-width: 0; }
+.figures dt { font: 600 clamp(1.6rem, 6vw, 2.25rem)/1.1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-variant-numeric: tabular-nums; }
+.figures dd { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--muted); line-height: 1.4; }
 .status { margin: 0; padding: 1rem 1.1rem; background: var(--panel); border-radius: 6px; font-size: 0.96875rem; }
 .status div + div { margin-top: 0.6rem; }
 .label { display: block; font-size: 0.75rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
@@ -100,6 +104,9 @@ ul.plain li { margin-bottom: 0.35rem; }
 footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: 0.8125rem; color: var(--muted); }
 footer p { margin: 0 0 0.5rem; }
 @media (max-width: 480px) {
+  .figures { grid-template-columns: 1fr; gap: 0.6rem; }
+  .figures div { display: grid; grid-template-columns: 4.5rem 1fr; align-items: baseline; gap: 0.75rem; }
+  .figures dd { margin: 0; }
   .ladder li { grid-template-columns: 3.9rem 1fr; }
   .toc .no { flex-basis: 2.2rem; }
 }
@@ -114,19 +121,23 @@ footer p { margin: 0 0 0.5rem; }
 </nav>
 
 <header>
-  <p class="meta">A book · v44 · 26 November 2026</p>
+  <p class="meta">A mathematical exposition of a Lean archive</p>
   <h1>The Riemann hypothesis and GRH for Dirichlet <i>L</i>-functions</h1>
   <p class="subtitle">A readable account of the Lean proof in Alpöge’s archive</p>
-  <p class="lede">On 20 November 2026 Levent Alpöge released a Lean 4 proof, found with Claude, of the Riemann hypothesis and of the generalized Riemann hypothesis for Dirichlet <i>L</i>-functions: an archive of 175,187 files and 17.4 million lines. This book writes the argument of the archive out as mathematics. It states every result the proof uses, in the order in which the proof uses it, with a proof written for a reader, and gives for each statement the Lean declaration that proves it, with its file and line range, so that the archive remains the reference. The mathematics is Alpöge’s archive; the exposition is ours.</p>
+  <p class="lede">On 20 November 2026 Levent Alpöge released a Lean 4 proof, found with Claude, of the Riemann hypothesis and of the generalized Riemann hypothesis for Dirichlet <i>L</i>-functions: an archive of 175,187 files and 17.4 million lines. This book presents the argument of that archive in mathematical prose. Its index links each numbered statement of the main text to the Lean declarations that prove it, with their modules and source lines, so that any step of the text can be followed into the archive. The mathematics is Alpöge’s archive; the exposition is ours.</p>
+  <dl class="figures">
+    <div><dt>497</dt><dd>pages of main text, in nine parts</dd></div>
+    <div><dt>1582</dt><dd>pages in all, with the appendix of longer proofs and the index of Lean declarations</dd></div>
+    <div><dt>7</dt><dd>pages in the roadmap of the top of the argument</dd></div>
+  </dl>
   <div class="actions">
     <a class="btn primary" href="docs/book.pdf">Read the book<small>PDF · 1582 pages · 11 MB</small></a>
-    <a class="btn" href="https://doi.org/10.5281/zenodo.24562451">Zenodo<small>DOI 10.5281/zenodo.24562451</small></a>
+    <a class="btn" href="paper/roadmap.pdf">Roadmap<small>PDF · 7 pages</small></a>
+    <a class="btn" href="https://doi.org/10.5281/zenodo.24562451">Full book on Zenodo<small>DOI 10.5281/zenodo.24562451</small></a>
     <a class="btn" href="https://github.com/rh-lean-roadmap/rh-lean-roadmap">Source<small>GitHub</small></a>
-    <a class="btn" href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/issues">Report an error<small>GitHub issues</small></a>
   </div>
   <div class="status">
     <div><span class="label">The Lean archive</span>Accepted by several independent kernels (<a href="https://math.mit.edu/~drew/grh/">Sutherland’s report</a>). On 21 November 2026 the Lean FRO and the Mathlib Initiative certified in a <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">joint statement</a> that the statement and the proof of the Riemann hypothesis are correct.</div>
-    <div><span class="label">This book</span>Written by AI models from the Lean source. No human expert has reviewed the text. Where the text and the archive differ, the archive is right.</div>
   </div>
 </header>
 
@@ -172,15 +183,8 @@ footer p { margin: 0 0 0.5rem; }
 
 <section id="written">
   <h2>How the book was written</h2>
-  <blockquote>
-    <p>The text was written by several AI models, including Anthropic’s Claude, working from the Lean source. The author, who is not a specialist in this area, set the goals and the editorial rules and organised the review: models working in isolation drafted the chapters, and models from multiple families read anonymised copies of the whole book as referees over repeated rounds; every point they raised was settled against the Lean source. No human expert has reviewed the text. Where the text and the archive differ, the archive is right. Sources, the Lean index and the review procedure: <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap">https://github.com/rh-lean-roadmap/rh-lean-roadmap</a>. Alpöge works at Anthropic; this work is independent of him and of Anthropic.</p>
-  </blockquote>
+  <p>The project organizer set the editorial rules; several AI models wrote the text from the Lean source and cross-checked it.</p>
   <p>Sixty-three proofs, all in Part VIII, are headed “Proof (outline)”; each states its steps and ends with the Lean declaration that contains the complete proof. They are listed in <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/blob/main/docs/outline-proofs.md">outline-proofs.md</a>. What was tried to shorten the proof or make it more elementary is recorded in <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/blob/main/docs/simplification-notes.md">simplification-notes.md</a>. Chapter 4 gives an alternative Gaussian-kernel proof of the window criterion that has not been formalized; the archive’s argument is included in the appendix.</p>
-</section>
-
-<section id="corrections">
-  <h2>Corrections</h2>
-  <p>Corrections are welcome as <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/issues">GitHub issues</a>. Please give the statement number and, if you can, the Lean declaration it concerns.</p>
 </section>
 
 <section id="cite">
@@ -211,11 +215,12 @@ footer p { margin: 0 0 0.5rem; }
 
 <section id="zh" lang="zh-Hans">
   <h2>中文</h2>
-  <p>这是一本讲解 Alpöge 的 Lean 档案的书，用英文写成，共 1582 页：按证明使用的顺序写出它需要的每条陈述，给出写给读者的证明，并标明证明它的 Lean 声明、文件和行号。证明本身是 Alpöge 的档案。文字由多个 AI 模型依据 Lean 源码写成，还没有人类专家审读过；文字与档案不一致时，以档案为准。</p>
+  <p>这本书用数学文字讲解 Alpöge 的 Lean 档案：正文 497 页，加上收较长证明的附录和 Lean 声明索引，全书 1582 页（英文）。书末索引按编号列出正文每条陈述对应的 Lean 声明、模块和源码行号，读者可以从书中任何一步查到档案里的原文。另有 7 页路线图，概括证明顶层的五步。项目组织者制定编写规则，多个 AI 模型依据 Lean 源码撰写并交叉核对。</p>
   <ul class="plain">
     <li><a href="docs/reading-guide-zh.pdf">中文导读</a>（21 页）：六步讲完证明，每一步对应到档案里的定理和位置。</li>
+    <li><a href="paper/roadmap.pdf">路线图</a>（7 页，英文）：证明顶层的五步，每一步对应到档案里的声明。</li>
     <li><a href="web/">故事版</a>（中英双语）：不需要数学背景。</li>
-    <li><a href="docs/book.pdf">成文稿 PDF</a>（英文，1582 页）；纠错请提 <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/issues">GitHub issue</a>。</li>
+    <li><a href="docs/book.pdf">成文稿 PDF</a>（英文，1582 页），全书也存档在 <a href="https://doi.org/10.5281/zenodo.24562451">Zenodo</a>。</li>
   </ul>
 </section>
 
