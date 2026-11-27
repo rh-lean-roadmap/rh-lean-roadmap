@@ -4,7 +4,6 @@ The book (`docs/book.pdf`) gives every statement the proof of RH and GRH needs. 
 
 | Statement | Title | Lean declaration with the complete proof |
 |---|---|---|
-| Lemma B8.42bof-lattices | Residue lattices and the Herr class | `GlobalTheory.Present.RedLat.red_isLat` |
 | Proposition B8.10y | The same-word estimate by leading minors | `GlobalTheory.rowsPos_typeP` |
 | Proposition B8.02b-fibre | Weighted fibre over an embedded datum | `GlobalTheory.DegAsm.sum_weights_per_datum` |
 | Lemma B8.02yac | Bessel uniqueness under an opposite-sign gap | `CompanionTheory.Bmu.besselMapUniqGap` |
@@ -50,6 +49,7 @@ The book (`docs/book.pdf`) gives every statement the proof of RH and GRH needs. 
 | Lemma B8.28yb | A theta family with a controlled harmonic value | `GlobalTheory.PowGerm.lemmaBT_of_characters` |
 | Lemma B8.28yc | Integral expansion and the theta normaliser | `GlobalTheory.PowGerm.pointStatements_on_copies`; `GlobalTheory.PtTie.harmonicValue_translate` |
 | Proposition B8.28z | Weight-change inequality for reference depths | `GlobalTheory.RefSum.WFree.refExp_vp_le_shift` |
+| Lemma B8.42bof-lattices | Residue lattices and the Herr class | `GlobalTheory.Present.RedLat.red_isLat` |
 | Lemma B8.42bobk | Model lattices of the canonical residue realization | `GlobalTheory.Models.CharModel.model_chr_eq`; `GlobalTheory.ModelCount.count` |
 | Lemma B8.42bobh | The character obstruction | `GlobalTheory.Models.ModTh.hom_chr_eq_zero` |
 | Lemma B8.42bob | The \psi-shift dimension estimate and admissible cohomology classes | `GlobalTheory.TopSteps.CharVanish.stmt_of_real`; `GlobalTheory.TopSteps.admissibleUntwistedCharUnramified_of_residueRealisation` |
@@ -65,8 +65,10 @@ The book (`docs/book.pdf`) gives every statement the proof of RH and GRH needs. 
 | Lemma B8.42bv | Separated-cluster lifting and colength bound at unramified primes | `GlobalTheory.T.theoremE_corollaryA_closing_all_data` |
 | Lemma B8.42bw | Unrestricted and short-interval coordinate lifting at unramified primes | `Formalism.MainNotions.N.Ln17.sum_alt`; `Formalism.MainNotions.N.Ln17.frobenius_statement_of_fontaine` |
 | Lemma B8.42bx | Inert word dichotomy and final-row congruence passage | `GlobalTheory.NLink.starAD_of_global`; `GlobalTheory.NLink.BBSize.main` |
+| Lemma B8.50a | Degree of a separated row | `Formalism.MainNotions.GappedMultiplicityBounds.theorem_three_rows_of_real_place` |
 | Lemma B8.55b | Independence of comparison values | `GlobalTheory.ClassSumSpan.atDict_indep` |
 | Proposition B8.55 | Bounded rows of the indefinite realization | `GlobalTheory.Fc.R1.row_hRB_univ_alt` |
+| Proposition B9.19 | Crystalline data | `UpperTheory.Gal.Int.Geo.steps_holds` |
 
 # 以梗概给出的证明
 

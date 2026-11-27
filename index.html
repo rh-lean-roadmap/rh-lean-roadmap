@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Riemann hypothesis and GRH for Dirichlet L-functions · a readable account of the Lean proof</title>
-<meta name="description" content="A mathematical exposition of Levent Alpöge’s Lean proof of the Riemann hypothesis and of GRH for Dirichlet L-functions: a 497-page main text, 1582 pages in all, with an index linking numbered statements to Lean declarations, modules and source lines, and a 7-page roadmap.">
+<meta name="description" content="A mathematical exposition of Levent Alpöge’s Lean proof of the Riemann hypothesis and of GRH for Dirichlet L-functions: a 500-page main text, 1617 pages in all, with an index linking numbered statements to Lean declarations, modules and source lines, and a 7-page roadmap.">
 <link rel="canonical" href="https://rh-lean-roadmap.github.io/rh-lean-roadmap/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="The Riemann hypothesis and GRH for Dirichlet L-functions: a readable account of the Lean proof in Alpöge’s archive">
-<meta property="og:description" content="A 497-page main text, 1582 pages in all, presenting the argument of Alpöge’s Lean archive in mathematical prose, with an index linking numbered statements to Lean declarations, modules and source lines, and a 7-page roadmap.">
+<meta property="og:description" content="A 500-page main text, 1617 pages in all, presenting the argument of Alpöge’s Lean archive in mathematical prose, with an index linking numbered statements to Lean declarations, modules and source lines, and a 7-page roadmap.">
 <meta property="og:url" content="https://rh-lean-roadmap.github.io/rh-lean-roadmap/">
 <meta name="citation_title" content="The Riemann hypothesis and GRH for Dirichlet L-functions: a readable account of the Lean proof in Alpöge’s archive">
 <meta name="citation_author" content="rh-lean-roadmap">
@@ -126,12 +126,12 @@ footer p { margin: 0 0 0.5rem; }
   <p class="subtitle">A readable account of the Lean proof in Alpöge’s archive</p>
   <p class="lede">On 20 November 2026 Levent Alpöge released a Lean 4 proof, found with Claude, of the Riemann hypothesis and of the generalized Riemann hypothesis for Dirichlet <i>L</i>-functions: an archive of 175,187 files and 17.4 million lines. This book presents the argument of that archive in mathematical prose. Its index links each numbered statement of the main text to the Lean declarations that prove it, with their modules and source lines, so that any step of the text can be followed into the archive. The mathematics is Alpöge’s archive; the exposition is ours.</p>
   <dl class="figures">
-    <div><dt>497</dt><dd>pages of main text, in nine parts</dd></div>
-    <div><dt>1582</dt><dd>pages in all, with the appendix of longer proofs and the index of Lean declarations</dd></div>
+    <div><dt>500</dt><dd>pages of main text, in nine parts</dd></div>
+    <div><dt>1617</dt><dd>pages in all, with the appendix of longer proofs and the index of Lean declarations</dd></div>
     <div><dt>7</dt><dd>pages in the roadmap of the top of the argument</dd></div>
   </dl>
   <div class="actions">
-    <a class="btn primary" href="docs/book.pdf">Read the book<small>PDF · 1582 pages · 11 MB</small></a>
+    <a class="btn primary" href="docs/book.pdf">Read the book<small>PDF · 1617 pages · 12 MB</small></a>
     <a class="btn" href="paper/roadmap.pdf">Roadmap<small>PDF · 7 pages</small></a>
     <a class="btn" href="https://doi.org/10.5281/zenodo.24562451">Full book on Zenodo<small>DOI 10.5281/zenodo.24562451</small></a>
     <a class="btn" href="https://github.com/rh-lean-roadmap/rh-lean-roadmap">Source<small>GitHub</small></a>
@@ -148,7 +148,7 @@ footer p { margin: 0 0 0.5rem; }
     <li><div class="n">Story<span>no maths</span></div><div class="what"><a href="web/">The story version</a>, in Chinese and English, for readers with no mathematics.</div></li>
     <li><div class="n">7<span>pages</span></div><div class="what"><a href="paper/roadmap.pdf">The roadmap</a>: the top of the argument in five steps, each tied to declarations in the archive, then the published foundations and the points still to be traced.</div></li>
     <li><div class="n">22<span>pages</span></div><div class="what"><a href="docs/reading-guide-en.pdf">The reading guide</a>: the argument in six steps, from the prime sum over Frobenius classes to the Tate–Shafarevich window bound and the three inputs, with the location of every declaration cited. <a href="docs/reading-guide-zh.pdf" lang="zh-Hans">中文版</a> (21 pages).</div></li>
-    <li><div class="n">1582<span>pages</span></div><div class="what"><a href="docs/book.pdf">The book</a>: a main text of 497 pages, an appendix of 963 pages with the longer proofs, and the index of Lean declarations with the bibliography (122 pages).</div></li>
+    <li><div class="n">1617<span>pages</span></div><div class="what"><a href="docs/book.pdf">The book</a>: a main text of 500 pages, an appendix of 995 pages with the longer proofs, and the index of Lean declarations with the bibliography (122 pages).</div></li>
   </ul>
 </section>
 
@@ -159,15 +159,15 @@ footer p { margin: 0 0 0.5rem; }
     <li><span class="no">i</span><a class="t" href="docs/book.pdf#page=8">The five statements and the window criterion</a><span class="dots"></span><span class="pg">7</span></li>
     <li><span class="no">ii</span><a class="t" href="docs/book.pdf#page=33">The arithmetic side: prime sums and auxiliary primes</a><span class="dots"></span><span class="pg">32</span></li>
     <li><span class="no">iii</span><a class="t" href="docs/book.pdf#page=61">Divisibility from one theta lift</a><span class="dots"></span><span class="pg">60</span></li>
-    <li><span class="no">iv</span><a class="t" href="docs/book.pdf#page=102">Divisibility along the chain and division of lattices</a><span class="dots"></span><span class="pg">101</span></li>
-    <li><span class="no">v</span><a class="t" href="docs/book.pdf#page=144">Two bounds on one slope</a><span class="dots"></span><span class="pg">143</span></li>
-    <li><span class="no">vi</span><a class="t" href="docs/book.pdf#page=197">Input two: the window bound VWin</a><span class="dots"></span><span class="pg">196</span></li>
-    <li><span class="no">vii</span><a class="t" href="docs/book.pdf#page=263">Input one: Green</a><span class="dots"></span><span class="pg">262</span></li>
-    <li><span class="no">viii</span><a class="t" href="docs/book.pdf#page=275">Input three: the witness for HypsAlt</a><span class="dots"></span><span class="pg">274</span></li>
-    <li><span class="no">ix</span><a class="t" href="docs/book.pdf#page=476">Galois representations and local Langlands in the archive</a><span class="dots"></span><span class="pg">475</span></li>
-    <li class="back"><span class="no"></span><a class="t" href="docs/book.pdf#page=498">Appendix: proofs</a><span class="dots"></span><span class="pg">497</span></li>
-    <li><span class="no"></span><a class="t" href="docs/book.pdf#page=1461">Index of Lean declarations</a><span class="dots"></span><span class="pg">1460</span></li>
-    <li><span class="no"></span><a class="t" href="docs/book.pdf#page=1572">Bibliography</a><span class="dots"></span><span class="pg">1571</span></li>
+    <li><span class="no">iv</span><a class="t" href="docs/book.pdf#page=103">Divisibility along the chain and division of lattices</a><span class="dots"></span><span class="pg">102</span></li>
+    <li><span class="no">v</span><a class="t" href="docs/book.pdf#page=145">Two bounds on one slope</a><span class="dots"></span><span class="pg">144</span></li>
+    <li><span class="no">vi</span><a class="t" href="docs/book.pdf#page=198">Input two: the window bound VWin</a><span class="dots"></span><span class="pg">197</span></li>
+    <li><span class="no">vii</span><a class="t" href="docs/book.pdf#page=265">Input one: Green</a><span class="dots"></span><span class="pg">264</span></li>
+    <li><span class="no">viii</span><a class="t" href="docs/book.pdf#page=277">Input three: the witness for HypsAlt</a><span class="dots"></span><span class="pg">276</span></li>
+    <li><span class="no">ix</span><a class="t" href="docs/book.pdf#page=480">Galois representations and local Langlands in the archive</a><span class="dots"></span><span class="pg">479</span></li>
+    <li class="back"><span class="no"></span><a class="t" href="docs/book.pdf#page=501">Appendix: proofs</a><span class="dots"></span><span class="pg">500</span></li>
+    <li><span class="no"></span><a class="t" href="docs/book.pdf#page=1496">Index of Lean declarations</a><span class="dots"></span><span class="pg">1495</span></li>
+    <li><span class="no"></span><a class="t" href="docs/book.pdf#page=1607">Bibliography</a><span class="dots"></span><span class="pg">1606</span></li>
   </ol>
   <p>The introduction (page 4) gives the theorem and the argument in six steps. Parts I to V carry the argument from the five statements down to the three inputs that it takes from elsewhere in the archive; Parts VI to IX treat those inputs: Green’s classification of the cuspidal characters of GL<sub><i>d</i></sub>(<b>F</b><sub><i>p</i></sub>), the window bound VWin for Tate–Shafarevich-type groups, and the witness HypsAlt, a structure of 46 conditions on one family of data.</p>
 </section>
@@ -184,7 +184,7 @@ footer p { margin: 0 0 0.5rem; }
 <section id="written">
   <h2>How the book was written</h2>
   <p>The project organizer set the editorial rules; several AI models wrote the text from the Lean source and cross-checked it.</p>
-  <p>Sixty-three proofs, all in Part VIII, are headed “Proof (outline)”; each states its steps and ends with the Lean declaration that contains the complete proof. They are listed in <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/blob/main/docs/outline-proofs.md">outline-proofs.md</a>. What was tried to shorten the proof or make it more elementary is recorded in <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/blob/main/docs/simplification-notes.md">simplification-notes.md</a>. Chapter 4 gives an alternative Gaussian-kernel proof of the window criterion that has not been formalized; the archive’s argument is included in the appendix.</p>
+  <p>Sixty-five proofs, sixty-four in Part VIII and one in Part IX, are headed “Proof (outline)”; each states its steps and ends with the Lean declaration that contains the complete proof. They are listed in <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/blob/main/docs/outline-proofs.md">outline-proofs.md</a>. What was tried to shorten the proof or make it more elementary is recorded in <a href="https://github.com/rh-lean-roadmap/rh-lean-roadmap/blob/main/docs/simplification-notes.md">simplification-notes.md</a>. Chapter 4 gives an alternative Gaussian-kernel proof of the window criterion that has not been formalized; the archive’s argument is included in the appendix.</p>
 </section>
 
 <section id="cite">
@@ -215,12 +215,12 @@ footer p { margin: 0 0 0.5rem; }
 
 <section id="zh" lang="zh-Hans">
   <h2>中文</h2>
-  <p>这本书用数学文字讲解 Alpöge 的 Lean 档案：正文 497 页，加上收较长证明的附录和 Lean 声明索引，全书 1582 页（英文）。书末索引按编号列出正文每条陈述对应的 Lean 声明、模块和源码行号，读者可以从书中任何一步查到档案里的原文。另有 7 页路线图，概括证明顶层的五步。项目组织者制定编写规则，多个 AI 模型依据 Lean 源码撰写并交叉核对。</p>
+  <p>这本书用数学文字讲解 Alpöge 的 Lean 档案：正文 500 页，加上收较长证明的附录和 Lean 声明索引，全书 1617 页（英文）。书末索引按编号列出正文每条陈述对应的 Lean 声明、模块和源码行号，读者可以从书中任何一步查到档案里的原文。另有 7 页路线图，概括证明顶层的五步。项目组织者制定编写规则，多个 AI 模型依据 Lean 源码撰写并交叉核对。</p>
   <ul class="plain">
     <li><a href="docs/reading-guide-zh.pdf">中文导读</a>（21 页）：六步讲完证明，每一步对应到档案里的定理和位置。</li>
     <li><a href="paper/roadmap.pdf">路线图</a>（7 页，英文）：证明顶层的五步，每一步对应到档案里的声明。</li>
     <li><a href="web/">故事版</a>（中英双语）：不需要数学背景。</li>
-    <li><a href="docs/book.pdf">成文稿 PDF</a>（英文，1582 页），全书也存档在 <a href="https://doi.org/10.5281/zenodo.24562451">Zenodo</a>。</li>
+    <li><a href="docs/book.pdf">成文稿 PDF</a>（英文，1617 页），全书也存档在 <a href="https://doi.org/10.5281/zenodo.24562451">Zenodo</a>。</li>
   </ul>
 </section>
 
