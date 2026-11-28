@@ -1,6 +1,6 @@
 # rh-lean-roadmap
 
-Homepage: <https://rh-lean-roadmap.github.io/rh-lean-roadmap/> · Full book on Zenodo: [doi:10.5281/zenodo.24562451](https://doi.org/10.5281/zenodo.24562451)
+Homepage: <https://rh-lean-roadmap.github.io/rh-lean-roadmap/> · Full book on Zenodo: [doi:10.5281/zenodo.24623004](https://doi.org/10.5281/zenodo.24623004)
 
 A mathematical exposition of the Lean proof of the Riemann hypothesis and of the generalized Riemann hypothesis for Dirichlet *L*-functions, announced by Levent Alpöge on 20 November 2026.
 
@@ -112,9 +112,9 @@ Text, web pages and video (`docs/`, `paper/`, `web/`, `video/`, `index.html`, th
 
 ## 中文简介
 
-2026 年 11 月 20 日，Levent Alpöge 公布了和 Claude 一起完成的黎曼猜想与狄利克雷 GRH 的 Lean 证明。证明是一份 Lean 档案，17.5 万个文件、1740 万行，没有注释。几个独立的检查器已经接受了它，11 月 21 日 Lean FRO 和 Mathlib Initiative 发表联合声明，确认黎曼猜想的命题和证明都正确；Sutherland 还把它和另一个独立的形式化项目接在一起，推出了 Robin 不等式（所有 n > 5040）和 Lagarias 不等式（所有 n ≥ 1），这两个命题只讲约数和与调和数，不出现 ζ 函数。本仓库用数学文字讲解这份档案。核心是英文成文稿：正文 497 页，全书 1582 页；书末索引按编号列出正文每条陈述对应的 Lean 声明、模块和行号，读者可以从书中任何一步查到档案里的原文。另有 7 页路线图，概括证明顶层的五步。各项材料：
+2026 年 11 月 20 日，Levent Alpöge 公布了和 Claude 一起完成的黎曼猜想与狄利克雷 GRH 的 Lean 证明。证明是一份 Lean 档案，17.5 万个文件、1740 万行，没有注释。几个独立的检查器已经接受了它，11 月 21 日 Lean FRO 和 Mathlib Initiative 发表联合声明，确认黎曼猜想的命题和证明都正确；Sutherland 还把它和另一个独立的形式化项目接在一起，推出了 Robin 不等式（所有 n > 5040）和 Lagarias 不等式（所有 n ≥ 1），这两个命题只讲约数和与调和数，不出现 ζ 函数。本仓库用数学文字讲解这份档案。核心是英文成文稿：正文 500 页，全书 1617 页；书末索引按编号列出正文每条陈述对应的 Lean 声明、模块和行号，读者可以从书中任何一步查到档案里的原文。另有 7 页路线图，概括证明顶层的五步。各项材料：
 
-- `docs/book.pdf`：成文稿（英文），正文 500 页，附录 995 页放较长的证明，另附 Lean 声明索引（共 1617 页）。书末索引按陈述编号列出证明它的 Lean 声明；为这个证明新做的论证都给出了证明，长证明放在附录、正文给出思路；已发表的结果按档案用到的形式陈述并引用；第 4 章用高斯核给出窗口判据的一个更短的证明，这个证明没有形式化，档案的证明在附录里；明确标为“Proof (outline)”的 63 处（全部在第八部分）列在 `docs/outline-proofs.md`，每处末尾写明给出完整证明的 Lean 声明；脚本检查过全书证明之间的引用与交叉引用，无循环论证、无未定义引用；
+- `docs/book.pdf`：成文稿（英文），正文 500 页，附录 995 页放较长的证明，另附 Lean 声明索引（共 1617 页）。书末索引按陈述编号列出证明它的 Lean 声明；为这个证明新做的论证都给出了证明，长证明放在附录、正文给出思路；已发表的结果按档案用到的形式陈述并引用；第 4 章用高斯核给出窗口判据的一个更短的证明，这个证明没有形式化，档案的证明在附录里；明确标为“Proof (outline)”的 65 处（第八部分 64 处，第九部分 1 处）列在 `docs/outline-proofs.md`，每处末尾写明给出完整证明的 Lean 声明；脚本检查过全书证明之间的引用与交叉引用，无循环论证、无未定义引用；
 - `docs/reading-guide-zh.pdf`：中文解读版（21 页），六步讲完证明，每一步对应到档案里的定理和位置，附录列出全部引用声明的完整位置；`docs/reading-guide-en.pdf` 是英文版；
 - `paper/roadmap.pdf`：7 页英文导读，把证明顶层的五步和档案里的具体声明一一对上；
 - `web/index.html`：中英双语的讲故事版，不需要数学背景，在线阅读：<https://rh-lean-roadmap.github.io/rh-lean-roadmap/web/>；
